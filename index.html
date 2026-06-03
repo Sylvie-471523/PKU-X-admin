@@ -1,336 +1,156 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
-<html>
+<!DOCTYPE html>
+<html lang="zh-CN">
 <head>
-  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-  <meta http-equiv="Content-Style-Type" content="text/css">
-  <title></title>
-  <meta name="Generator" content="Cocoa HTML Writer">
-  <meta name="CocoaVersion" content="2685.6">
-  <style type="text/css">
-    p.p1 {margin: 0.0px 0.0px 0.0px 28.9px; text-indent: -28.9px; font: 12.0px Menlo; color: #800080}
-    p.p2 {margin: 0.0px 0.0px 0.0px 57.8px; text-indent: -57.8px; font: 12.0px Menlo; color: #800080}
-    p.p3 {margin: 0.0px 0.0px 0.0px 86.7px; text-indent: -86.7px; font: 12.0px Menlo; color: #800080}
-    p.p4 {margin: 0.0px 0.0px 0.0px 115.5px; text-indent: -115.6px; font: 12.0px Menlo; color: #800080}
-    p.p5 {margin: 0.0px 0.0px 0.0px 144.4px; text-indent: -144.5px; font: 12.0px Menlo; color: #800080}
-    p.p6 {margin: 0.0px 0.0px 0.0px 173.3px; text-indent: -173.4px; font: 12.0px Menlo; color: #800080}
-    p.p7 {margin: 0.0px 0.0px 0.0px 231.2px; text-indent: -231.2px; font: 12.0px Menlo; color: #800080}
-    p.p8 {margin: 0.0px 0.0px 0.0px 202.2px; text-indent: -202.3px; font: 12.0px Menlo; color: #800080}
-    p.p9 {margin: 0.0px 0.0px 0.0px 28.9px; text-indent: -28.9px; font: 12.0px Menlo; color: #800080; min-height: 14.0px}
-    p.p10 {margin: 0.0px 0.0px 0.0px 173.3px; text-indent: -173.4px; font: 12.0px Menlo; color: #800080; min-height: 14.0px}
-    p.p11 {margin: 0.0px 0.0px 0.0px 260.1px; text-indent: -260.1px; font: 12.0px Menlo; color: #800080}
-    p.p12 {margin: 0.0px 0.0px 0.0px 288.9px; text-indent: -289.0px; font: 12.0px Menlo; color: #800080}
-    p.p13 {margin: 0.0px 0.0px 0.0px 209.5px; text-indent: -209.6px; font: 12.0px Menlo; color: #800080}
-    p.p14 {margin: 0.0px 0.0px 0.0px 346.8px; text-indent: -346.8px; font: 12.0px Menlo; color: #800080}
-    p.p15 {margin: 0.0px 0.0px 0.0px 317.9px; text-indent: -317.9px; font: 12.0px Menlo; color: #800080}
-    p.p16 {margin: 0.0px 0.0px 0.0px 238.4px; text-indent: -238.4px; font: 12.0px Menlo; color: #800080}
-    span.s1 {font-variant-ligatures: no-common-ligatures}
-    span.s2 {font: 12.0px 'PingFang SC'; font-variant-ligatures: no-common-ligatures}
-    span.s3 {font: 12.0px 'Apple Color Emoji'; font-variant-ligatures: no-common-ligatures}
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>小北X计划 - 后台管理</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        .active-tab { border-bottom: 3px solid #2563eb; color: #2563eb; font-weight: bold; }
+        [v-cloak] { display: none; }
+        .card { background: white; border-radius: 0.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1); padding: 1.5rem; }
+    </style>
 </head>
-<body>
-<p class="p1"><span class="s1">&lt;!DOCTYPE html&gt;</span></p>
-<p class="p1"><span class="s1">&lt;html lang="zh-CN"&gt;</span></p>
-<p class="p1"><span class="s1">&lt;head&gt;</span></p>
-<p class="p2"><span class="s1"><span class="Apple-converted-space">    </span>&lt;meta charset="UTF-8"&gt;</span></p>
-<p class="p2"><span class="s1"><span class="Apple-converted-space">    </span>&lt;meta name="viewport" content="width=device-width, initial-scale=1.0"&gt;</span></p>
-<p class="p2"><span class="s1"><span class="Apple-converted-space">    </span>&lt;title&gt;</span><span class="s2">小北</span><span class="s1">X</span><span class="s2">计划</span><span class="s1"> - </span><span class="s2">后台管理说明系统</span><span class="s1">&lt;/title&gt;</span></p>
-<p class="p2"><span class="s1"><span class="Apple-converted-space">    </span>&lt;script src="https://cdn.tailwindcss.com"&gt;&lt;/script&gt;</span></p>
-<p class="p2"><span class="s1"><span class="Apple-converted-space">    </span>&lt;script src="https://unpkg.com/vue@3/dist/vue.global.js"&gt;&lt;/script&gt;</span></p>
-<p class="p2"><span class="s1"><span class="Apple-converted-space">    </span>&lt;script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"&gt;&lt;/script&gt;</span></p>
-<p class="p2"><span class="s1"><span class="Apple-converted-space">    </span>&lt;style&gt;</span></p>
-<p class="p3"><span class="s1"><span class="Apple-converted-space">        </span>.active-tab { border-bottom: 3px solid #2563eb; color: #2563eb; font-weight: bold; }</span></p>
-<p class="p3"><span class="s1"><span class="Apple-converted-space">        </span>[v-cloak] { display: none; }</span></p>
-<p class="p3"><span class="s1"><span class="Apple-converted-space">        </span>.card { background: white; border-radius: 0.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1); padding: 1.5rem; }</span></p>
-<p class="p3"><span class="s1"><span class="Apple-converted-space">        </span>.btn-primary { background: #2563eb; color: white; padding: 0.5rem 1rem; border-radius: 0.375rem; transition: opacity 0.2s; }</span></p>
-<p class="p3"><span class="s1"><span class="Apple-converted-space">        </span>.btn-primary:hover { opacity: 0.9; }</span></p>
-<p class="p2"><span class="s1"><span class="Apple-converted-space">    </span>&lt;/style&gt;</span></p>
-<p class="p1"><span class="s1">&lt;/head&gt;</span></p>
-<p class="p1"><span class="s1">&lt;body class="bg-gray-50 text-gray-900"&gt;</span></p>
-<p class="p2"><span class="s1"><span class="Apple-converted-space">    </span>&lt;div id="app" v-cloak&gt;</span></p>
-<p class="p3"><span class="s1"><span class="Apple-converted-space">        </span>&lt;!-- </span><span class="s2">导航</span><span class="s1"> --&gt;</span></p>
-<p class="p3"><span class="s1"><span class="Apple-converted-space">        </span>&lt;nav class="bg-white border-b sticky top-0 z-50"&gt;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">            </span>&lt;div class="max-w-5xl mx-auto px-6 py-4 flex justify-between items-center"&gt;</span></p>
-<p class="p5"><span class="s1"><span class="Apple-converted-space">                </span>&lt;div class="flex items-center space-x-2"&gt;</span></p>
-<p class="p6"><span class="s1"><span class="Apple-converted-space">                    </span>&lt;div class="w-8 h-8 bg-blue-600 rounded flex items-center justify-center text-white font-bold"&gt;X&lt;/div&gt;</span></p>
-<p class="p6"><span class="s1"><span class="Apple-converted-space">                    </span>&lt;h1 class="text-xl font-bold tracking-tight"&gt;</span><span class="s2">小北</span><span class="s1">X</span><span class="s2">计划后台</span><span class="s1">&lt;/h1&gt;</span></p>
-<p class="p5"><span class="s1"><span class="Apple-converted-space">                </span>&lt;/div&gt;</span></p>
-<p class="p5"><span class="s1"><span class="Apple-converted-space">                </span>&lt;div class="flex space-x-6 text-sm"&gt;</span></p>
-<p class="p6"><span class="s1"><span class="Apple-converted-space">                    </span>&lt;button v-for="t in tabs" :key="t.id" @click="currentTab = t.id"<span class="Apple-converted-space"> </span></span></p>
-<p class="p7"><span class="s1"><span class="Apple-converted-space">                            </span>:class="['pb-1 transition-all', currentTab === t.id ? 'active-tab' : 'text-gray-500 hover:text-blue-500']"&gt;</span></p>
-<p class="p8"><span class="s1"><span class="Apple-converted-space">                        </span>{{ t.name }}</span></p>
-<p class="p6"><span class="s1"><span class="Apple-converted-space">                    </span>&lt;/button&gt;</span></p>
-<p class="p5"><span class="s1"><span class="Apple-converted-space">                </span>&lt;/div&gt;</span></p>
-<p class="p5"><span class="s1"><span class="Apple-converted-space">                </span>&lt;div v-if="loading" class="flex items-center text-xs text-blue-500"&gt;</span></p>
-<p class="p6"><span class="s1"><span class="Apple-converted-space">                    </span>&lt;svg class="animate-spin h-4 w-4 mr-2" viewBox="0 0 24 24"&gt;&lt;circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none"&gt;&lt;/circle&gt;&lt;path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"&gt;&lt;/path&gt;&lt;/svg&gt;</span></p>
-<p class="p6"><span class="s1"><span class="Apple-converted-space">                    </span></span><span class="s2">同步中</span><span class="s1">...</span></p>
-<p class="p5"><span class="s1"><span class="Apple-converted-space">                </span>&lt;/div&gt;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">            </span>&lt;/div&gt;</span></p>
-<p class="p3"><span class="s1"><span class="Apple-converted-space">        </span>&lt;/nav&gt;</span></p>
-<p class="p9"><span class="s1"></span><br></p>
-<p class="p3"><span class="s1"><span class="Apple-converted-space">        </span>&lt;main class="max-w-5xl mx-auto p-6"&gt;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">            </span>&lt;!-- 1. </span><span class="s2">工作流程说明</span><span class="s1"> --&gt;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">            </span>&lt;div v-if="currentTab === 'workflow'" class="space-y-6"&gt;</span></p>
-<p class="p5"><span class="s1"><span class="Apple-converted-space">                </span>&lt;div class="card"&gt;</span></p>
-<p class="p6"><span class="s1"><span class="Apple-converted-space">                    </span>&lt;div class="flex justify-between items-center mb-4"&gt;</span></p>
-<p class="p8"><span class="s1"><span class="Apple-converted-space">                        </span>&lt;h2 class="text-lg font-bold"&gt;</span><span class="s2">工作流程编辑</span><span class="s1">&lt;/h2&gt;</span></p>
-<p class="p8"><span class="s1"><span class="Apple-converted-space">                        </span>&lt;button @click="saveConfig" class="btn-primary text-sm"&gt;</span><span class="s2">保存全局配置</span><span class="s1">&lt;/button&gt;</span></p>
-<p class="p6"><span class="s1"><span class="Apple-converted-space">                    </span>&lt;/div&gt;</span></p>
-<p class="p6"><span class="s1"><span class="Apple-converted-space">                    </span>&lt;textarea v-model="config.workflow_text" class="w-full border rounded-md p-4 h-48 focus:ring-2 focus:ring-blue-500 outline-none mb-6" placeholder="</span><span class="s2">输入流程文字说明</span><span class="s1">..."&gt;&lt;/textarea&gt;</span></p>
-<p class="p10"><span class="s1"><span class="Apple-converted-space">                    </span></span></p>
-<p class="p6"><span class="s1"><span class="Apple-converted-space">                    </span>&lt;div class="border-t pt-4"&gt;</span></p>
-<p class="p8"><span class="s1"><span class="Apple-converted-space">                        </span>&lt;label class="block font-bold mb-2"&gt;</span><span class="s2">图片资料上传</span><span class="s1">&lt;/label&gt;</span></p>
-<p class="p8"><span class="s1"><span class="Apple-converted-space">                        </span>&lt;input type="file" @change="uploadImage" class="text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"&gt;</span></p>
-<p class="p8"><span class="s1"><span class="Apple-converted-space">                        </span>&lt;div class="grid grid-cols-2 md:grid-cols-3 gap-4 mt-6"&gt;</span></p>
-<p class="p7"><span class="s1"><span class="Apple-converted-space">                            </span>&lt;div v-for="(url, idx) in config.workflow_images" :key="idx" class="relative group aspect-video"&gt;</span></p>
-<p class="p11"><span class="s1"><span class="Apple-converted-space">                                </span>&lt;img :src="url" class="w-full h-full object-cover rounded-lg border"&gt;</span></p>
-<p class="p11"><span class="s1"><span class="Apple-converted-space">                                </span>&lt;button @click="config.workflow_images.splice(idx,1)" class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition shadow-lg"&gt;×&lt;/button&gt;</span></p>
-<p class="p7"><span class="s1"><span class="Apple-converted-space">                            </span>&lt;/div&gt;</span></p>
-<p class="p8"><span class="s1"><span class="Apple-converted-space">                        </span>&lt;/div&gt;</span></p>
-<p class="p6"><span class="s1"><span class="Apple-converted-space">                    </span>&lt;/div&gt;</span></p>
-<p class="p5"><span class="s1"><span class="Apple-converted-space">                </span>&lt;/div&gt;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">            </span>&lt;/div&gt;</span></p>
-<p class="p9"><span class="s1"></span><br></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">            </span>&lt;!-- 2. </span><span class="s2">排班计划</span><span class="s1"> --&gt;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">            </span>&lt;div v-if="currentTab === 'schedule'" class="card"&gt;</span></p>
-<p class="p5"><span class="s1"><span class="Apple-converted-space">                </span>&lt;div class="flex justify-between items-center mb-6"&gt;</span></p>
-<p class="p6"><span class="s1"><span class="Apple-converted-space">                    </span>&lt;h2 class="text-lg font-bold"&gt;</span><span class="s2">值班</span><span class="s1">/</span><span class="s2">排班计划</span><span class="s1">&lt;/h2&gt;</span></p>
-<p class="p6"><span class="s1"><span class="Apple-converted-space">                    </span>&lt;div class="space-x-3"&gt;</span></p>
-<p class="p8"><span class="s1"><span class="Apple-converted-space">                        </span>&lt;button @click="config.schedules.push({t:'', n:'', v:''})" class="text-blue-600 text-sm font-medium"&gt;+ </span><span class="s2">添加行</span><span class="s1">&lt;/button&gt;</span></p>
-<p class="p8"><span class="s1"><span class="Apple-converted-space">                        </span>&lt;button @click="saveConfig" class="btn-primary text-sm"&gt;</span><span class="s2">保存排班表</span><span class="s1">&lt;/button&gt;</span></p>
-<p class="p6"><span class="s1"><span class="Apple-converted-space">                    </span>&lt;/div&gt;</span></p>
-<p class="p5"><span class="s1"><span class="Apple-converted-space">                </span>&lt;/div&gt;</span></p>
-<p class="p5"><span class="s1"><span class="Apple-converted-space">                </span>&lt;div class="overflow-x-auto"&gt;</span></p>
-<p class="p6"><span class="s1"><span class="Apple-converted-space">                    </span>&lt;table class="w-full text-left"&gt;</span></p>
-<p class="p8"><span class="s1"><span class="Apple-converted-space">                        </span>&lt;thead&gt;</span></p>
-<p class="p7"><span class="s1"><span class="Apple-converted-space">                            </span>&lt;tr class="bg-gray-50 border-b"&gt;</span></p>
-<p class="p11"><span class="s1"><span class="Apple-converted-space">                                </span>&lt;th class="p-3 text-sm font-semibold"&gt;</span><span class="s2">时间段</span><span class="s1">/</span><span class="s2">次序</span><span class="s1">&lt;/th&gt;</span></p>
-<p class="p11"><span class="s1"><span class="Apple-converted-space">                                </span>&lt;th class="p-3 text-sm font-semibold"&gt;</span><span class="s2">负责人</span><span class="s1">&lt;/th&gt;</span></p>
-<p class="p11"><span class="s1"><span class="Apple-converted-space">                                </span>&lt;th class="p-3 text-sm font-semibold"&gt;</span><span class="s2">备注说明</span><span class="s1">&lt;/th&gt;</span></p>
-<p class="p11"><span class="s1"><span class="Apple-converted-space">                                </span>&lt;th class="p-3 w-16"&gt;&lt;/th&gt;</span></p>
-<p class="p7"><span class="s1"><span class="Apple-converted-space">                            </span>&lt;/tr&gt;</span></p>
-<p class="p8"><span class="s1"><span class="Apple-converted-space">                        </span>&lt;/thead&gt;</span></p>
-<p class="p8"><span class="s1"><span class="Apple-converted-space">                        </span>&lt;tbody&gt;</span></p>
-<p class="p7"><span class="s1"><span class="Apple-converted-space">                            </span>&lt;tr v-for="(s, idx) in config.schedules" :key="idx" class="border-b hover:bg-gray-50"&gt;</span></p>
-<p class="p11"><span class="s1"><span class="Apple-converted-space">                                </span>&lt;td class="p-2"&gt;&lt;input v-model="s.t" class="w-full bg-transparent border-none focus:ring-1 focus:ring-blue-300 rounded p-1" placeholder="</span><span class="s2">例：周一</span><span class="s1">/</span><span class="s2">上午</span><span class="s1">"&gt;&lt;/td&gt;</span></p>
-<p class="p11"><span class="s1"><span class="Apple-converted-space">                                </span>&lt;td class="p-2"&gt;&lt;input v-model="s.n" class="w-full bg-transparent border-none focus:ring-1 focus:ring-blue-300 rounded p-1" placeholder="</span><span class="s2">负责人姓名</span><span class="s1">"&gt;&lt;/td&gt;</span></p>
-<p class="p11"><span class="s1"><span class="Apple-converted-space">                                </span>&lt;td class="p-2"&gt;&lt;input v-model="s.v" class="w-full bg-transparent border-none focus:ring-1 focus:ring-blue-300 rounded p-1" placeholder="..."&gt;&lt;/td&gt;</span></p>
-<p class="p11"><span class="s1"><span class="Apple-converted-space">                                </span>&lt;td class="p-2 text-center"&gt;</span></p>
-<p class="p12"><span class="s1"><span class="Apple-converted-space">                                    </span>&lt;button @click="config.schedules.splice(idx,1)" class="text-red-300 hover:text-red-500"&gt;✕&lt;/button&gt;</span></p>
-<p class="p11"><span class="s1"><span class="Apple-converted-space">                                </span>&lt;/td&gt;</span></p>
-<p class="p7"><span class="s1"><span class="Apple-converted-space">                            </span>&lt;/tr&gt;</span></p>
-<p class="p8"><span class="s1"><span class="Apple-converted-space">                        </span>&lt;/tbody&gt;</span></p>
-<p class="p6"><span class="s1"><span class="Apple-converted-space">                    </span>&lt;/table&gt;</span></p>
-<p class="p5"><span class="s1"><span class="Apple-converted-space">                </span>&lt;/div&gt;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">            </span>&lt;/div&gt;</span></p>
-<p class="p9"><span class="s1"></span><br></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">            </span>&lt;!-- 3. </span><span class="s2">工作日志</span><span class="s1"> --&gt;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">            </span>&lt;div v-if="currentTab === 'logs'" class="space-y-4"&gt;</span></p>
-<p class="p5"><span class="s1"><span class="Apple-converted-space">                </span>&lt;div class="flex justify-between items-center"&gt;</span></p>
-<p class="p6"><span class="s1"><span class="Apple-converted-space">                    </span>&lt;h2 class="text-lg font-bold text-gray-700"&gt;</span><span class="s2">每日工作记录库</span><span class="s1">&lt;/h2&gt;</span></p>
-<p class="p6"><span class="s1"><span class="Apple-converted-space">                    </span>&lt;button @click="openLog()" class="bg-green-600 text-white px-4 py-2 rounded-md text-sm font-bold shadow-sm hover:bg-green-700 transition"&gt;+ </span><span class="s2">新建今日记录</span><span class="s1">&lt;/button&gt;</span></p>
-<p class="p5"><span class="s1"><span class="Apple-converted-space">                </span>&lt;/div&gt;</span></p>
-<p class="p5"><span class="s1"><span class="Apple-converted-space">                </span>&lt;div class="grid gap-3"&gt;</span></p>
-<p class="p6"><span class="s1"><span class="Apple-converted-space">                    </span>&lt;div v-for="log in logs" :key="log.id" @click="openLog(log)"<span class="Apple-converted-space"> </span></span></p>
-<p class="p13"><span class="s1"><span class="Apple-converted-space">                         </span>class="card flex justify-between items-center cursor-pointer hover:border-blue-400 border-2 border-transparent transition-all"&gt;</span></p>
-<p class="p8"><span class="s1"><span class="Apple-converted-space">                        </span>&lt;div class="flex items-center space-x-4"&gt;</span></p>
-<p class="p7"><span class="s1"><span class="Apple-converted-space">                            </span>&lt;div class="text-center pr-4 border-r border-gray-100"&gt;</span></p>
-<p class="p11"><span class="s1"><span class="Apple-converted-space">                                </span>&lt;div class="text-xs text-gray-400 uppercase font-bold"&gt;{{ log.date.split('-')[0] }}&lt;/div&gt;</span></p>
-<p class="p11"><span class="s1"><span class="Apple-converted-space">                                </span>&lt;div class="text-lg font-black text-blue-600"&gt;{{ log.date.split('-').slice(1).join('/') }}&lt;/div&gt;</span></p>
-<p class="p7"><span class="s1"><span class="Apple-converted-space">                            </span>&lt;/div&gt;</span></p>
-<p class="p7"><span class="s1"><span class="Apple-converted-space">                            </span>&lt;div&gt;</span></p>
-<p class="p11"><span class="s1"><span class="Apple-converted-space">                                </span>&lt;div class="font-bold text-gray-800"&gt;</span><span class="s2">负责人</span><span class="s1">: {{ log.leader || '</span><span class="s2">未填写</span><span class="s1">' }}&lt;/div&gt;</span></p>
-<p class="p11"><span class="s1"><span class="Apple-converted-space">                                </span>&lt;div class="text-xs text-gray-500"&gt;</span><span class="s2">包含问题</span><span class="s1">: {{ log.issues ? log.issues.length : 0 }} </span><span class="s2">个</span><span class="s1">&lt;/div&gt;</span></p>
-<p class="p7"><span class="s1"><span class="Apple-converted-space">                            </span>&lt;/div&gt;</span></p>
-<p class="p8"><span class="s1"><span class="Apple-converted-space">                        </span>&lt;/div&gt;</span></p>
-<p class="p8"><span class="s1"><span class="Apple-converted-space">                        </span>&lt;div :class="log.is_finished ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-700'" class="px-3 py-1 rounded-full text-xs font-bold"&gt;</span></p>
-<p class="p7"><span class="s1"><span class="Apple-converted-space">                            </span>{{ log.is_finished ? '</span><span class="s2">审核完成</span><span class="s1">' : '</span><span class="s2">待审核</span><span class="s1">' }}</span></p>
-<p class="p8"><span class="s1"><span class="Apple-converted-space">                        </span>&lt;/div&gt;</span></p>
-<p class="p6"><span class="s1"><span class="Apple-converted-space">                    </span>&lt;/div&gt;</span></p>
-<p class="p5"><span class="s1"><span class="Apple-converted-space">                </span>&lt;/div&gt;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">            </span>&lt;/div&gt;</span></p>
-<p class="p9"><span class="s1"></span><br></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">            </span>&lt;!-- 4. </span><span class="s2">问题汇总</span><span class="s1"> --&gt;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">            </span>&lt;div v-if="currentTab === 'issues'" class="card p-0 overflow-hidden"&gt;</span></p>
-<p class="p5"><span class="s1"><span class="Apple-converted-space">                </span>&lt;table class="w-full text-left"&gt;</span></p>
-<p class="p6"><span class="s1"><span class="Apple-converted-space">                    </span>&lt;thead class="bg-gray-50 border-b"&gt;</span></p>
-<p class="p8"><span class="s1"><span class="Apple-converted-space">                        </span>&lt;tr&gt;</span></p>
-<p class="p7"><span class="s1"><span class="Apple-converted-space">                            </span>&lt;th class="p-4 text-sm"&gt;</span><span class="s2">日期</span><span class="s1">&lt;/th&gt;</span></p>
-<p class="p7"><span class="s1"><span class="Apple-converted-space">                            </span>&lt;th class="p-4 text-sm"&gt;</span><span class="s2">来源负责人</span><span class="s1">&lt;/th&gt;</span></p>
-<p class="p7"><span class="s1"><span class="Apple-converted-space">                            </span>&lt;th class="p-4 text-sm"&gt;</span><span class="s2">问题内容</span><span class="s1">&lt;/th&gt;</span></p>
-<p class="p7"><span class="s1"><span class="Apple-converted-space">                            </span>&lt;th class="p-4 text-sm"&gt;</span><span class="s2">处理状态</span><span class="s1">&lt;/th&gt;</span></p>
-<p class="p8"><span class="s1"><span class="Apple-converted-space">                        </span>&lt;/tr&gt;</span></p>
-<p class="p6"><span class="s1"><span class="Apple-converted-space">                    </span>&lt;/thead&gt;</span></p>
-<p class="p6"><span class="s1"><span class="Apple-converted-space">                    </span>&lt;tbody&gt;</span></p>
-<p class="p8"><span class="s1"><span class="Apple-converted-space">                        </span>&lt;template v-for="log in logs"&gt;</span></p>
-<p class="p7"><span class="s1"><span class="Apple-converted-space">                            </span>&lt;tr v-for="(iss, i) in log.issues" :key="log.id + i" class="border-b last:border-none hover:bg-gray-50 transition"&gt;</span></p>
-<p class="p11"><span class="s1"><span class="Apple-converted-space">                                </span>&lt;td class="p-4 text-sm text-gray-500"&gt;{{ log.date }}&lt;/td&gt;</span></p>
-<p class="p11"><span class="s1"><span class="Apple-converted-space">                                </span>&lt;td class="p-4 font-medium"&gt;{{ log.leader }}&lt;/td&gt;</span></p>
-<p class="p11"><span class="s1"><span class="Apple-converted-space">                                </span>&lt;td class="p-4"&gt;{{ iss.content }}&lt;/td&gt;</span></p>
-<p class="p11"><span class="s1"><span class="Apple-converted-space">                                </span>&lt;td class="p-4 text-right"&gt;</span></p>
-<p class="p12"><span class="s1"><span class="Apple-converted-space">                                    </span>&lt;select v-model="iss.status" @change="syncIssueStatus(log)"<span class="Apple-converted-space"> </span></span></p>
-<p class="p14"><span class="s1"><span class="Apple-converted-space">                                            </span>:class="{'text-green-600': iss.status==='</span><span class="s2">已解决</span><span class="s1">', 'text-red-500': iss.status==='</span><span class="s2">未讨论</span><span class="s1">'}"</span></p>
-<p class="p14"><span class="s1"><span class="Apple-converted-space">                                            </span>class="bg-transparent font-bold text-sm outline-none cursor-pointer"&gt;</span></p>
-<p class="p15"><span class="s1"><span class="Apple-converted-space">                                        </span>&lt;option value="</span><span class="s2">未讨论</span><span class="s1">"&gt;</span><span class="s3">🔴</span><span class="s1"> </span><span class="s2">未讨论</span><span class="s1">&lt;/option&gt;</span></p>
-<p class="p15"><span class="s1"><span class="Apple-converted-space">                                        </span>&lt;option value="</span><span class="s2">进行中</span><span class="s1">"&gt;</span><span class="s3">🟡</span><span class="s1"> </span><span class="s2">进行中</span><span class="s1">&lt;/option&gt;</span></p>
-<p class="p15"><span class="s1"><span class="Apple-converted-space">                                        </span>&lt;option value="</span><span class="s2">已解决</span><span class="s1">"&gt;</span><span class="s3">🟢</span><span class="s1"> </span><span class="s2">已解决</span><span class="s1">&lt;/option&gt;</span></p>
-<p class="p12"><span class="s1"><span class="Apple-converted-space">                                    </span>&lt;/select&gt;</span></p>
-<p class="p11"><span class="s1"><span class="Apple-converted-space">                                </span>&lt;/td&gt;</span></p>
-<p class="p7"><span class="s1"><span class="Apple-converted-space">                            </span>&lt;/tr&gt;</span></p>
-<p class="p8"><span class="s1"><span class="Apple-converted-space">                        </span>&lt;/template&gt;</span></p>
-<p class="p6"><span class="s1"><span class="Apple-converted-space">                    </span>&lt;/tbody&gt;</span></p>
-<p class="p5"><span class="s1"><span class="Apple-converted-space">                </span>&lt;/table&gt;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">            </span>&lt;/div&gt;</span></p>
-<p class="p9"><span class="s1"></span><br></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">            </span>&lt;!-- </span><span class="s2">日志编辑对话框</span><span class="s1"> (Modal) --&gt;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">            </span>&lt;div v-if="editLog" class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-[100]"&gt;</span></p>
-<p class="p5"><span class="s1"><span class="Apple-converted-space">                </span>&lt;div class="bg-white rounded-xl shadow-2xl w-full max-w-xl overflow-hidden animate-in fade-in zoom-in duration-200"&gt;</span></p>
-<p class="p6"><span class="s1"><span class="Apple-converted-space">                    </span>&lt;div class="p-6"&gt;</span></p>
-<p class="p8"><span class="s1"><span class="Apple-converted-space">                        </span>&lt;h3 class="text-xl font-bold mb-6 text-gray-800"&gt;{{ editLog.id ? '</span><span class="s2">编辑详情</span><span class="s1">' : '</span><span class="s2">填写今日记录</span><span class="s1">' }}&lt;/h3&gt;</span></p>
-<p class="p8"><span class="s1"><span class="Apple-converted-space">                        </span>&lt;div class="grid grid-cols-2 gap-4 mb-6"&gt;</span></p>
-<p class="p7"><span class="s1"><span class="Apple-converted-space">                            </span>&lt;div&gt;</span></p>
-<p class="p11"><span class="s1"><span class="Apple-converted-space">                                </span>&lt;label class="block text-xs font-bold text-gray-400 mb-1"&gt;</span><span class="s2">负责日期</span><span class="s1">&lt;/label&gt;</span></p>
-<p class="p11"><span class="s1"><span class="Apple-converted-space">                                </span>&lt;input type="date" v-model="editLog.date" class="w-full border rounded-lg p-2 focus:ring-2 focus:ring-blue-500"&gt;</span></p>
-<p class="p7"><span class="s1"><span class="Apple-converted-space">                            </span>&lt;/div&gt;</span></p>
-<p class="p7"><span class="s1"><span class="Apple-converted-space">                            </span>&lt;div&gt;</span></p>
-<p class="p11"><span class="s1"><span class="Apple-converted-space">                                </span>&lt;label class="block text-xs font-bold text-gray-400 mb-1"&gt;</span><span class="s2">今日负责人</span><span class="s1">&lt;/label&gt;</span></p>
-<p class="p11"><span class="s1"><span class="Apple-converted-space">                                </span>&lt;input type="text" v-model="editLog.leader" class="w-full border rounded-lg p-2 focus:ring-2 focus:ring-blue-500" placeholder="</span><span class="s2">姓名</span><span class="s1">"&gt;</span></p>
-<p class="p7"><span class="s1"><span class="Apple-converted-space">                            </span>&lt;/div&gt;</span></p>
-<p class="p8"><span class="s1"><span class="Apple-converted-space">                        </span>&lt;/div&gt;</span></p>
-<p class="p9"><span class="s1"></span><br></p>
-<p class="p8"><span class="s1"><span class="Apple-converted-space">                        </span>&lt;div @click="editLog.is_finished = !editLog.is_finished"<span class="Apple-converted-space"> </span></span></p>
-<p class="p16"><span class="s1"><span class="Apple-converted-space">                             </span>:class="editLog.is_finished ? 'bg-green-50 border-green-200 text-green-700' : 'bg-gray-50 border-gray-200 text-gray-500'"</span></p>
-<p class="p16"><span class="s1"><span class="Apple-converted-space">                             </span>class="flex items-center space-x-3 p-4 rounded-lg border-2 cursor-pointer transition-colors mb-6"&gt;</span></p>
-<p class="p7"><span class="s1"><span class="Apple-converted-space">                            </span>&lt;div :class="editLog.is_finished ? 'bg-green-500' : 'bg-gray-300'" class="w-5 h-5 rounded flex items-center justify-center text-white text-xs"&gt;✓&lt;/div&gt;</span></p>
-<p class="p7"><span class="s1"><span class="Apple-converted-space">                            </span>&lt;span class="font-bold"&gt;</span><span class="s2">审核确认：今日工作流程已全部完成</span><span class="s1">&lt;/span&gt;</span></p>
-<p class="p8"><span class="s1"><span class="Apple-converted-space">                        </span>&lt;/div&gt;</span></p>
-<p class="p9"><span class="s1"></span><br></p>
-<p class="p8"><span class="s1"><span class="Apple-converted-space">                        </span>&lt;div class="space-y-3"&gt;</span></p>
-<p class="p7"><span class="s1"><span class="Apple-converted-space">                            </span>&lt;div class="flex justify-between items-center"&gt;</span></p>
-<p class="p11"><span class="s1"><span class="Apple-converted-space">                                </span>&lt;span class="font-bold text-gray-700"&gt;</span><span class="s2">发现的问题</span><span class="s1"> (</span><span class="s2">同步至问题汇总</span><span class="s1">)&lt;/span&gt;</span></p>
-<p class="p11"><span class="s1"><span class="Apple-converted-space">                                </span>&lt;button @click="editLog.issues.push({content:'', status:'</span><span class="s2">未讨论</span><span class="s1">'})" class="text-blue-600 text-xs font-bold"&gt;+ </span><span class="s2">添加项</span><span class="s1">&lt;/button&gt;</span></p>
-<p class="p7"><span class="s1"><span class="Apple-converted-space">                            </span>&lt;/div&gt;</span></p>
-<p class="p7"><span class="s1"><span class="Apple-converted-space">                            </span>&lt;div v-for="(iss, i) in editLog.issues" :key="i" class="flex items-center space-x-2 animate-in slide-in-from-left duration-150"&gt;</span></p>
-<p class="p11"><span class="s1"><span class="Apple-converted-space">                                </span>&lt;input v-model="iss.content" placeholder="</span><span class="s2">输入问题描述</span><span class="s1">..." class="flex-grow border-b py-2 text-sm outline-none focus:border-blue-500"&gt;</span></p>
-<p class="p11"><span class="s1"><span class="Apple-converted-space">                                </span>&lt;button @click="editLog.issues.splice(i,1)" class="text-gray-300 hover:text-red-500 font-bold"&gt;✕&lt;/button&gt;</span></p>
-<p class="p7"><span class="s1"><span class="Apple-converted-space">                            </span>&lt;/div&gt;</span></p>
-<p class="p8"><span class="s1"><span class="Apple-converted-space">                        </span>&lt;/div&gt;</span></p>
-<p class="p6"><span class="s1"><span class="Apple-converted-space">                    </span>&lt;/div&gt;</span></p>
-<p class="p6"><span class="s1"><span class="Apple-converted-space">                    </span>&lt;div class="bg-gray-50 p-4 flex justify-end space-x-4"&gt;</span></p>
-<p class="p8"><span class="s1"><span class="Apple-converted-space">                        </span>&lt;button @click="editLog = null" class="text-gray-500 font-bold px-4"&gt;</span><span class="s2">取消</span><span class="s1">&lt;/button&gt;</span></p>
-<p class="p8"><span class="s1"><span class="Apple-converted-space">                        </span>&lt;button @click="saveLog" class="btn-primary"&gt;</span><span class="s2">保存并同步到云端</span><span class="s1">&lt;/button&gt;</span></p>
-<p class="p6"><span class="s1"><span class="Apple-converted-space">                    </span>&lt;/div&gt;</span></p>
-<p class="p5"><span class="s1"><span class="Apple-converted-space">                </span>&lt;/div&gt;</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">            </span>&lt;/div&gt;</span></p>
-<p class="p3"><span class="s1"><span class="Apple-converted-space">        </span>&lt;/main&gt;</span></p>
-<p class="p2"><span class="s1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</span></p>
-<p class="p9"><span class="s1"></span><br></p>
-<p class="p2"><span class="s1"><span class="Apple-converted-space">    </span>&lt;script&gt;</span></p>
-<p class="p3"><span class="s1"><span class="Apple-converted-space">        </span>const { createApp, ref, onMounted } = Vue;</span></p>
-<p class="p9"><span class="s1"></span><br></p>
-<p class="p3"><span class="s1"><span class="Apple-converted-space">        </span>// ---</span><span class="s2">！！！这里填入你的</span><span class="s1"> SUPABASE </span><span class="s2">信息</span><span class="s1"> </span><span class="s2">！！！</span><span class="s1">---</span></p>
-<p class="p3"><span class="s1"><span class="Apple-converted-space">        </span>const SUPABASE_URL = 'https://zapiekidlfpyjvlvnrhc.supabase.co';</span></p>
-<p class="p3"><span class="s1"><span class="Apple-converted-space">        </span>const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InphcGlla2lkbGZweWp2bHZucmhjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA0OTE3NTMsImV4cCI6MjA5NjA2Nzc1M30.1QGzAJQMj45KSyiFfuP_EPNqcKgoPMQO3aplqvn1iOc';</span></p>
-<p class="p3"><span class="s1"><span class="Apple-converted-space">        </span>// ------------------------------------------</span></p>
-<p class="p9"><span class="s1"></span><br></p>
-<p class="p3"><span class="s1"><span class="Apple-converted-space">        </span>const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);</span></p>
-<p class="p9"><span class="s1"></span><br></p>
-<p class="p3"><span class="s1"><span class="Apple-converted-space">        </span>createApp({</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">            </span>setup() {</span></p>
-<p class="p5"><span class="s1"><span class="Apple-converted-space">                </span>const currentTab = ref('workflow');</span></p>
-<p class="p5"><span class="s1"><span class="Apple-converted-space">                </span>const loading = ref(false);</span></p>
-<p class="p5"><span class="s1"><span class="Apple-converted-space">                </span>const config = ref({ workflow_text: '', workflow_images: [], schedules: [] });</span></p>
-<p class="p5"><span class="s1"><span class="Apple-converted-space">                </span>const logs = ref([]);</span></p>
-<p class="p5"><span class="s1"><span class="Apple-converted-space">                </span>const editLog = ref(null);</span></p>
-<p class="p5"><span class="s1"><span class="Apple-converted-space">                </span>const tabs = [</span></p>
-<p class="p6"><span class="s1"><span class="Apple-converted-space">                    </span>{ id: 'workflow', name: '</span><span class="s2">工作流程</span><span class="s1">' },</span></p>
-<p class="p6"><span class="s1"><span class="Apple-converted-space">                    </span>{ id: 'schedule', name: '</span><span class="s2">排班计划</span><span class="s1">' },</span></p>
-<p class="p6"><span class="s1"><span class="Apple-converted-space">                    </span>{ id: 'logs', name: '</span><span class="s2">工作日志</span><span class="s1">' },</span></p>
-<p class="p6"><span class="s1"><span class="Apple-converted-space">                    </span>{ id: 'issues', name: '</span><span class="s2">问题汇总</span><span class="s1">' }</span></p>
-<p class="p5"><span class="s1"><span class="Apple-converted-space">                </span>];</span></p>
-<p class="p9"><span class="s1"></span><br></p>
-<p class="p5"><span class="s1"><span class="Apple-converted-space">                </span>const fetchData = async () =&gt; {</span></p>
-<p class="p6"><span class="s1"><span class="Apple-converted-space">                    </span>loading.value = true;</span></p>
-<p class="p6"><span class="s1"><span class="Apple-converted-space">                    </span>try {</span></p>
-<p class="p8"><span class="s1"><span class="Apple-converted-space">                        </span>// 1. </span><span class="s2">获取配置</span></p>
-<p class="p8"><span class="s1"><span class="Apple-converted-space">                        </span>const { data: cfg } = await supabase.from('project_config').select('*').eq('id', 1).single();</span></p>
-<p class="p8"><span class="s1"><span class="Apple-converted-space">                        </span>if (cfg) config.value = cfg;</span></p>
-<p class="p9"><span class="s1"></span><br></p>
-<p class="p8"><span class="s1"><span class="Apple-converted-space">                        </span>// 2. </span><span class="s2">获取日志</span><span class="s1"> (</span><span class="s2">按日期倒序</span><span class="s1">)</span></p>
-<p class="p8"><span class="s1"><span class="Apple-converted-space">                        </span>const { data: lg } = await supabase.from('daily_logs').select('*').order('date', { ascending: false });</span></p>
-<p class="p8"><span class="s1"><span class="Apple-converted-space">                        </span>logs.value = lg || [];</span></p>
-<p class="p6"><span class="s1"><span class="Apple-converted-space">                    </span>} catch (err) {</span></p>
-<p class="p8"><span class="s1"><span class="Apple-converted-space">                        </span>console.error('Fetch error:', err);</span></p>
-<p class="p6"><span class="s1"><span class="Apple-converted-space">                    </span>} finally {</span></p>
-<p class="p8"><span class="s1"><span class="Apple-converted-space">                        </span>loading.value = false;</span></p>
-<p class="p6"><span class="s1"><span class="Apple-converted-space">                    </span>}</span></p>
-<p class="p5"><span class="s1"><span class="Apple-converted-space">                </span>};</span></p>
-<p class="p9"><span class="s1"></span><br></p>
-<p class="p5"><span class="s1"><span class="Apple-converted-space">                </span>const saveConfig = async () =&gt; {</span></p>
-<p class="p6"><span class="s1"><span class="Apple-converted-space">                    </span>loading.value = true;</span></p>
-<p class="p6"><span class="s1"><span class="Apple-converted-space">                    </span>const { error } = await supabase.from('project_config').upsert({</span></p>
-<p class="p8"><span class="s1"><span class="Apple-converted-space">                        </span>id: 1,</span></p>
-<p class="p8"><span class="s1"><span class="Apple-converted-space">                        </span>workflow_text: config.value.workflow_text,</span></p>
-<p class="p8"><span class="s1"><span class="Apple-converted-space">                        </span>workflow_images: config.value.workflow_images,</span></p>
-<p class="p8"><span class="s1"><span class="Apple-converted-space">                        </span>schedules: config.value.schedules,</span></p>
-<p class="p8"><span class="s1"><span class="Apple-converted-space">                        </span>updated_at: new Date()</span></p>
-<p class="p6"><span class="s1"><span class="Apple-converted-space">                    </span>});</span></p>
-<p class="p6"><span class="s1"><span class="Apple-converted-space">                    </span>if (!error) alert('</span><span class="s3">✅</span><span class="s1"> </span><span class="s2">流程与排班配置同步成功！</span><span class="s1">');</span></p>
-<p class="p6"><span class="s1"><span class="Apple-converted-space">                    </span>loading.value = false;</span></p>
-<p class="p5"><span class="s1"><span class="Apple-converted-space">                </span>};</span></p>
-<p class="p9"><span class="s1"></span><br></p>
-<p class="p5"><span class="s1"><span class="Apple-converted-space">                </span>const uploadImage = async (e) =&gt; {</span></p>
-<p class="p6"><span class="s1"><span class="Apple-converted-space">                    </span>const file = e.target.files[0];</span></p>
-<p class="p6"><span class="s1"><span class="Apple-converted-space">                    </span>if (!file) return;</span></p>
-<p class="p6"><span class="s1"><span class="Apple-converted-space">                    </span>loading.value = true;</span></p>
-<p class="p6"><span class="s1"><span class="Apple-converted-space">                    </span>const fileName = `public/${Date.now()}_${file.name}`;</span></p>
-<p class="p6"><span class="s1"><span class="Apple-converted-space">                    </span>const { data, error } = await supabase.storage.from('images').upload(fileName, file);</span></p>
-<p class="p6"><span class="s1"><span class="Apple-converted-space">                    </span>if (error) {</span></p>
-<p class="p8"><span class="s1"><span class="Apple-converted-space">                        </span>alert('</span><span class="s2">图片上传失败，请确认</span><span class="s1"> Storage </span><span class="s2">桶策略已开启</span><span class="s1">');</span></p>
-<p class="p6"><span class="s1"><span class="Apple-converted-space">                    </span>} else {</span></p>
-<p class="p8"><span class="s1"><span class="Apple-converted-space">                        </span>const { data: { publicUrl } } = supabase.storage.from('images').getPublicUrl(fileName);</span></p>
-<p class="p8"><span class="s1"><span class="Apple-converted-space">                        </span>config.value.workflow_images.push(publicUrl);</span></p>
-<p class="p6"><span class="s1"><span class="Apple-converted-space">                    </span>}</span></p>
-<p class="p6"><span class="s1"><span class="Apple-converted-space">                    </span>loading.value = false;</span></p>
-<p class="p5"><span class="s1"><span class="Apple-converted-space">                </span>};</span></p>
-<p class="p9"><span class="s1"></span><br></p>
-<p class="p5"><span class="s1"><span class="Apple-converted-space">                </span>const openLog = (log = null) =&gt; {</span></p>
-<p class="p6"><span class="s1"><span class="Apple-converted-space">                    </span>if (log) {</span></p>
-<p class="p8"><span class="s1"><span class="Apple-converted-space">                        </span>editLog.value = JSON.parse(JSON.stringify(log));</span></p>
-<p class="p6"><span class="s1"><span class="Apple-converted-space">                    </span>} else {</span></p>
-<p class="p8"><span class="s1"><span class="Apple-converted-space">                        </span>editLog.value = {<span class="Apple-converted-space"> </span></span></p>
-<p class="p7"><span class="s1"><span class="Apple-converted-space">                            </span>date: new Date().toISOString().split('T')[0],<span class="Apple-converted-space"> </span></span></p>
-<p class="p7"><span class="s1"><span class="Apple-converted-space">                            </span>leader: '',<span class="Apple-converted-space"> </span></span></p>
-<p class="p7"><span class="s1"><span class="Apple-converted-space">                            </span>is_finished: false,<span class="Apple-converted-space"> </span></span></p>
-<p class="p7"><span class="s1"><span class="Apple-converted-space">                            </span>issues: []<span class="Apple-converted-space"> </span></span></p>
-<p class="p8"><span class="s1"><span class="Apple-converted-space">                        </span>};</span></p>
-<p class="p6"><span class="s1"><span class="Apple-converted-space">                    </span>}</span></p>
-<p class="p5"><span class="s1"><span class="Apple-converted-space">                </span>};</span></p>
-<p class="p9"><span class="s1"></span><br></p>
-<p class="p5"><span class="s1"><span class="Apple-converted-space">                </span>const saveLog = async () =&gt; {</span></p>
-<p class="p6"><span class="s1"><span class="Apple-converted-space">                    </span>loading.value = true;</span></p>
-<p class="p6"><span class="s1"><span class="Apple-converted-space">                    </span>const { error } = await supabase.from('daily_logs').upsert(editLog.value);</span></p>
-<p class="p6"><span class="s1"><span class="Apple-converted-space">                    </span>if (!error) {</span></p>
-<p class="p8"><span class="s1"><span class="Apple-converted-space">                        </span>editLog.value = null;</span></p>
-<p class="p8"><span class="s1"><span class="Apple-converted-space">                        </span>await fetchData();</span></p>
-<p class="p6"><span class="s1"><span class="Apple-converted-space">                    </span>}</span></p>
-<p class="p6"><span class="s1"><span class="Apple-converted-space">                    </span>loading.value = false;</span></p>
-<p class="p5"><span class="s1"><span class="Apple-converted-space">                </span>};</span></p>
-<p class="p9"><span class="s1"></span><br></p>
-<p class="p5"><span class="s1"><span class="Apple-converted-space">                </span>const syncIssueStatus = async (log) =&gt; {</span></p>
-<p class="p6"><span class="s1"><span class="Apple-converted-space">                    </span>await supabase.from('daily_logs').update({ issues: log.issues }).eq('id', log.id);</span></p>
-<p class="p5"><span class="s1"><span class="Apple-converted-space">                </span>};</span></p>
-<p class="p9"><span class="s1"></span><br></p>
-<p class="p5"><span class="s1"><span class="Apple-converted-space">                </span>onMounted(fetchData);</span></p>
-<p class="p9"><span class="s1"></span><br></p>
-<p class="p5"><span class="s1"><span class="Apple-converted-space">                </span>return {</span></p>
-<p class="p6"><span class="s1"><span class="Apple-converted-space">                    </span>tabs, currentTab, loading, config, logs, editLog,</span></p>
-<p class="p6"><span class="s1"><span class="Apple-converted-space">                    </span>saveConfig, uploadImage, openLog, saveLog, syncIssueStatus</span></p>
-<p class="p5"><span class="s1"><span class="Apple-converted-space">                </span>};</span></p>
-<p class="p4"><span class="s1"><span class="Apple-converted-space">            </span>}</span></p>
-<p class="p3"><span class="s1"><span class="Apple-converted-space">        </span>}).mount('#app');</span></p>
-<p class="p2"><span class="s1"><span class="Apple-converted-space">    </span>&lt;/script&gt;</span></p>
-<p class="p1"><span class="s1">&lt;/body&gt;</span></p>
-<p class="p1"><span class="s1">&lt;/html&gt;</span></p>
+<body class="bg-gray-50 text-gray-900">
+    <div id="app" v-cloak>
+        <nav class="bg-white border-b sticky top-0 z-50">
+            <div class="max-w-5xl mx-auto px-6 py-4 flex justify-between items-center">
+                <h1 class="text-xl font-bold text-blue-600">小北X计划后台</h1>
+                <div class="flex space-x-6 text-sm">
+                    <button v-for="t in tabs" @click="currentTab = t.id" :class="[currentTab === t.id ? 'active-tab' : 'text-gray-500']">{{ t.name }}</button>
+                </div>
+                <div v-if="loading" class="text-xs text-blue-500">同步中...</div>
+            </div>
+        </nav>
+
+        <main class="max-w-5xl mx-auto p-6">
+            <!-- 1. 工作流程 -->
+            <div v-if="currentTab === 'workflow'" class="card">
+                <div class="flex justify-between mb-4"><h2 class="font-bold">工作流程</h2><button @click="saveConfig" class="bg-blue-600 text-white px-4 py-1 rounded text-sm">保存</button></div>
+                <textarea v-model="config.workflow_text" class="w-full border rounded p-3 h-48 mb-4"></textarea>
+                <input type="file" @change="uploadImage" class="text-sm">
+                <div class="grid grid-cols-3 gap-4 mt-4">
+                    <img v-for="url in config.workflow_images" :src="url" class="rounded border h-32 w-full object-cover">
+                </div>
+            </div>
+
+            <!-- 2. 排班计划 -->
+            <div v-if="currentTab === 'schedule'" class="card">
+                <div class="flex justify-between mb-4"><h2 class="font-bold">排班计划</h2><button @click="saveConfig" class="bg-blue-600 text-white px-4 py-1 rounded text-sm">保存</button></div>
+                <table class="w-full text-left border-collapse">
+                    <tr class="bg-gray-50 border-b"><th class="p-2">时间/次序</th><th class="p-2">负责人</th><th class="p-2">备注</th></tr>
+                    <tr v-for="s in config.schedules" class="border-b">
+                        <td class="p-2"><input v-model="s.t" class="w-full outline-none"></td>
+                        <td class="p-2"><input v-model="s.n" class="w-full outline-none"></td>
+                        <td class="p-2"><input v-model="s.v" class="w-full outline-none"></td>
+                    </tr>
+                </table>
+                <button @click="config.schedules.push({t:'',n:'',v:''})" class="mt-4 text-blue-500 text-sm">+ 添加一行</button>
+            </div>
+
+            <!-- 3. 工作日志 -->
+            <div v-if="currentTab === 'logs'" class="space-y-4">
+                <div class="flex justify-between"><h2 class="font-bold">每日记录</h2><button @click="openLog()" class="bg-green-600 text-white px-4 py-2 rounded text-sm">+ 新增记录</button></div>
+                <div v-for="log in logs" @click="openLog(log)" class="card cursor-pointer hover:border-blue-400 border border-transparent">
+                    <div class="font-bold">{{log.date}} - 负责人: {{log.leader}}</div>
+                </div>
+            </div>
+
+            <!-- 4. 问题汇总 -->
+            <div v-if="currentTab === 'issues'" class="card p-0">
+                <table class="w-full text-left">
+                    <thead class="bg-gray-100"><tr><th class="p-3">日期</th><th class="p-3">负责人</th><th class="p-3">问题</th><th class="p-3">状态</th></tr></thead>
+                    <template v-for="log in logs"><tr v-for="iss in log.issues" class="border-t text-sm">
+                        <td class="p-3">{{log.date}}</td><td class="p-3">{{log.leader}}</td><td class="p-3">{{iss.content}}</td>
+                        <td class="p-3"><select v-model="iss.status" @change="syncIssueStatus(log)"><option>未讨论</option><option>进行中</option><option>已解决</option></select></td>
+                    </tr></template>
+                </table>
+            </div>
+
+            <!-- 日志弹窗 -->
+            <div v-if="editLog" class="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-[100]">
+                <div class="bg-white p-6 rounded-lg w-full max-w-md shadow-xl">
+                    <h3 class="font-bold mb-4">编辑记录</h3>
+                    <input type="date" v-model="editLog.date" class="w-full border p-2 mb-2">
+                    <input type="text" v-model="editLog.leader" placeholder="负责人" class="w-full border p-2 mb-4">
+                    <div class="mb-4">
+                        <div class="flex justify-between mb-2 font-bold text-sm">问题记录 <button @click="editLog.issues.push({content:'', status:'未讨论'})" class="text-blue-500">+添加</button></div>
+                        <div v-for="(iss, i) in editLog.issues" class="flex mb-2 gap-2">
+                            <input v-model="iss.content" class="flex-grow border-b text-sm">
+                            <button @click="editLog.issues.splice(i,1)" class="text-red-300">×</button>
+                        </div>
+                    </div>
+                    <div class="flex justify-end gap-4"><button @click="editLog=null">取消</button><button @click="saveLog" class="bg-blue-600 text-white px-4 py-1 rounded">保存同步</button></div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const { createApp, ref, onMounted } = Vue;
+        const SUPABASE_URL = 'https://zapiekidlfpyjvlvnrhc.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InphcGlla2lkbGZweWp2bHZucmhjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA0OTE3NTMsImV4cCI6MjA5NjA2Nzc1M30.1QGzAJQMj45KSyiFfuP_EPNqcKgoPMQO3aplqvn1iOc';
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        createApp({
+            setup() {
+                const currentTab = ref('workflow');
+                const loading = ref(false);
+                const config = ref({ workflow_text: '', workflow_images: [], schedules: [] });
+                const logs = ref([]);
+                const editLog = ref(null);
+                const tabs = [{id:'workflow', name:'工作流程'}, {id:'schedule', name:'排班计划'}, {id:'logs', name:'每日记录'}, {id:'issues', name:'问题汇总'}];
+
+                const fetchData = async () => {
+                    loading.value = true;
+                    const { data: cfg } = await supabase.from('project_config').select('*').eq('id', 1).single();
+                    if (cfg) config.value = cfg;
+                    const { data: lg } = await supabase.from('daily_logs').select('*').order('date', { ascending: false });
+                    logs.value = lg || [];
+                    loading.value = false;
+                };
+
+                const saveConfig = async () => {
+                    loading.value = true;
+                    await supabase.from('project_config').upsert({ id: 1, ...config.value });
+                    alert('已同步到云端');
+                    loading.value = false;
+                };
+
+                const uploadImage = async (e) => {
+                    const file = e.target.files[0];
+                    if (!file) return;
+                    loading.value = true;
+                    const fileName = `${Date.now()}_${file.name}`;
+                    const { data } = await supabase.storage.from('images').upload(fileName, file);
+                    if (data) {
+                        const { data: { publicUrl } } = supabase.storage.from('images').getPublicUrl(fileName);
+                        config.value.workflow_images.push(publicUrl);
+                    }
+                    loading.value = false;
+                };
+
+                const openLog = (log = null) => {
+                    editLog.value = log ? JSON.parse(JSON.stringify(log)) : { date: new Date().toISOString().split('T')[0], leader: '', is_finished: false, issues: [] };
+                };
+
+                const saveLog = async () => {
+                    loading.value = true;
+                    await supabase.from('daily_logs').upsert(editLog.value);
+                    editLog.value = null;
+                    fetchData();
+                };
+
+                const syncIssueStatus = async (log) => {
+                    await supabase.from('daily_logs').update({ issues: log.issues }).eq('id', log.id);
+                };
+
+                onMounted(fetchData);
+                return { tabs, currentTab, loading, config, logs, editLog, saveConfig, uploadImage, openLog, saveLog, syncIssueStatus };
+            }
+        }).mount('#app');
+    </script>
 </body>
 </html>

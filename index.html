@@ -3,225 +3,185 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>小北X计划 - 后台管理系统</title>
-    <!-- 引入外部库 -->
+    <title>小北X计划后台</title>
+    <!-- 1. 载入样式 -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        .active-tab { border-bottom: 3px solid #2563eb; color: #2563eb; font-weight: bold; }
         [v-cloak] { display: none; }
-        .card { background: white; border-radius: 0.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1); padding: 1.5rem; }
-        .btn-blue { background: #2563eb; color: white; padding: 0.4rem 1rem; border-radius: 0.3rem; font-size: 0.875rem; }
+        .active-tab { border-bottom: 3px solid #2563eb; color: #2563eb; font-weight: bold; }
+        .card { background: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); padding: 20px; }
     </style>
 </head>
-<body class="bg-gray-50 text-gray-900">
+<body class="bg-gray-50">
+
     <div id="app" v-cloak>
-        <!-- 导航栏 -->
-        <nav class="bg-white border-b sticky top-0 z-50">
-            <div class="max-w-5xl mx-auto px-6 py-4 flex justify-between items-center">
+        <nav class="bg-white border-b sticky top-0 z-50 px-6 py-4">
+            <div class="max-w-5xl mx-auto flex justify-between items-center">
                 <h1 class="text-xl font-bold text-blue-600">小北X计划后台</h1>
-                <div class="flex space-x-6 text-sm font-medium">
-                    <button v-for="t in tabs" :key="t.id" @click="currentTab = t.id" 
-                            :class="[currentTab === t.id ? 'active-tab' : 'text-gray-500 hover:text-blue-500']">
-                        {{ t.name }}
-                    </button>
+                <div class="flex space-x-6">
+                    <button v-for="t in tabs" @click="currentTab = t.id" :class="[currentTab === t.id ? 'active-tab' : 'text-gray-500']" class="pb-1 text-sm">{{t.name}}</button>
                 </div>
-                <div v-if="loading" class="text-xs text-blue-400 animate-pulse">数据同步中...</div>
+                <div v-if="loading" class="text-xs text-blue-400">同步中...</div>
             </div>
         </nav>
 
         <main class="max-w-5xl mx-auto p-6">
-            <!-- 1. 工作流程 -->
-            <section v-if="currentTab === 'workflow'" class="card">
-                <div class="flex justify-between items-center mb-4">
-                    <h2 class="font-bold">工作流程编辑</h2>
-                    <button @click="saveProjectConfig" class="btn-blue">保存全局配置</button>
+            <!-- 切换内容 -->
+            <div v-if="currentTab === 'workflow'" class="card">
+                <div class="flex justify-between mb-4"><h2 class="font-bold">工作流程</h2><button @click="saveConfig" class="bg-blue-600 text-white px-4 py-1 rounded text-sm">保存</button></div>
+                <textarea v-model="config.workflow_text" class="w-full border p-3 h-48 mb-4 rounded"></textarea>
+                <input type="file" @change="uploadImg" class="text-xs">
+                <div class="grid grid-cols-3 gap-4 mt-4">
+                    <img v-for="url in config.workflow_images" :src="url" class="rounded border h-32 w-full object-cover">
                 </div>
-                <textarea v-model="config.workflow_text" class="w-full border rounded p-3 h-40 focus:ring-2 focus:ring-blue-200 outline-none mb-4" placeholder="在此输入流程文字说明..."></textarea>
-                <div class="border-t pt-4">
-                    <label class="block text-sm font-bold mb-2">图片上传:</label>
-                    <input type="file" @change="uploadImage" class="text-sm mb-4">
-                    <div class="grid grid-cols-3 gap-4">
-                        <div v-for="(img, idx) in config.workflow_images" :key="idx" class="relative group">
-                            <img :src="img" class="w-full h-32 object-cover rounded border">
-                            <button @click="config.workflow_images.splice(idx,1)" class="absolute top-1 right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100">×</button>
-                        </div>
-                    </div>
-                </div>
-            </section>
+            </div>
 
-            <!-- 2. 排班计划 -->
-            <section v-if="currentTab === 'schedule'" class="card">
-                <div class="flex justify-between items-center mb-4">
-                    <h2 class="font-bold">排班次序表</h2>
-                    <div class="space-x-4">
-                        <button @click="config.schedules.push({t:'', n:'', v:''})" class="text-blue-500 text-sm">+ 加行</button>
-                        <button @click="saveProjectConfig" class="btn-blue">保存</button>
-                    </div>
-                </div>
+            <div v-if="currentTab === 'schedule'" class="card">
+                <div class="flex justify-between mb-4"><h2 class="font-bold">排班计划</h2><button @click="saveConfig" class="bg-blue-600 text-white px-4 py-1 rounded text-sm">保存</button></div>
                 <table class="w-full text-left border-collapse">
-                    <thead><tr class="bg-gray-50 border-b text-sm"><th class="p-2">时间/次序</th><th class="p-2">负责人</th><th class="p-2">备注</th><th class="w-10"></th></tr></thead>
-                    <tbody>
-                        <tr v-for="(s, i) in config.schedules" :key="i" class="border-b">
-                            <td class="p-2"><input v-model="s.t" class="w-full outline-none bg-transparent"></td>
-                            <td class="p-2"><input v-model="s.n" class="w-full outline-none bg-transparent"></td>
-                            <td class="p-2"><input v-model="s.v" class="w-full outline-none bg-transparent"></td>
-                            <td class="p-2 text-center text-red-300 cursor-pointer" @click="config.schedules.splice(i,1)">✕</td>
+                    <tr class="bg-gray-50 border-b"><th class="p-2">时间</th><th class="p-2">负责人</th><th class="p-2">备注</th></tr>
+                    <tr v-for="s in config.schedules" class="border-b">
+                        <td class="p-2"><input v-model="s.t" class="w-full outline-none"></td>
+                        <td class="p-2"><input v-model="s.n" class="w-full outline-none"></td>
+                        <td class="p-2"><input v-model="s.v" class="w-full outline-none"></td>
+                    </tr>
+                </table>
+                <button @click="config.schedules.push({t:'',n:'',v:''})" class="mt-4 text-blue-500 text-sm">+ 添加行</button>
+            </div>
+
+            <div v-if="currentTab === 'logs'" class="space-y-4">
+                <div class="flex justify-between"><h2 class="font-bold">每日记录</h2><button @click="openLog()" class="bg-green-600 text-white px-4 py-2 rounded text-sm">+ 新增</button></div>
+                <div v-for="log in logs" @click="openLog(log)" class="card cursor-pointer hover:border-blue-400 border border-transparent">
+                    <div class="font-bold">{{log.date}} - 负责人: {{log.leader}}</div>
+                </div>
+            </div>
+
+            <div v-if="currentTab === 'issues'" class="card p-0">
+                <table class="w-full text-left">
+                    <thead class="bg-gray-100"><tr><th class="p-3">日期</th><th class="p-3">负责人</th><th class="p-3">问题</th><th class="p-3">状态</th></tr></thead>
+                    <template v-for="log in logs">
+                        <tr v-for="iss in log.issues" class="border-t text-sm">
+                            <td class="p-3 text-gray-400">{{log.date}}</td>
+                            <td class="p-3 font-bold">{{log.leader}}</td>
+                            <td class="p-3">{{iss.content}}</td>
+                            <td class="p-3">
+                                <select v-model="iss.status" @change="syncLog(log)" class="border rounded text-xs p-1">
+                                    <option>未讨论</option><option>进行中</option><option>已解决</option>
+                                </select>
+                            </td>
                         </tr>
-                    </tbody>
+                    </template>
                 </table>
-            </section>
+            </div>
 
-            <!-- 3. 工作日志 -->
-            <section v-if="currentTab === 'logs'" class="space-y-4">
-                <div class="flex justify-between items-center"><h2 class="font-bold">工作日志</h2><button @click="openLogEdit()" class="bg-green-600 text-white px-4 py-2 rounded text-sm">+ 新增今日记录</button></div>
-                <div v-for="log in logs" :key="log.id" @click="openLogEdit(log)" class="card cursor-pointer hover:border-blue-400 border-2 border-transparent transition-all flex justify-between">
-                    <div>
-                        <div class="font-bold text-lg text-blue-600">{{ log.date }}</div>
-                        <div class="text-sm text-gray-500">负责人: {{ log.leader || '未填写' }}</div>
+            <!-- 弹窗 -->
+            <div v-if="editLog" class="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-[100]">
+                <div class="bg-white p-6 rounded-lg w-full max-w-md">
+                    <h3 class="font-bold mb-4">编辑日志</h3>
+                    <div class="grid grid-cols-2 gap-2 mb-4">
+                        <input type="date" v-model="editLog.date" class="border p-2 rounded">
+                        <input type="text" v-model="editLog.leader" placeholder="负责人" class="border p-2 rounded">
                     </div>
-                    <div :class="log.is_finished ? 'text-green-500':'text-orange-500'" class="text-sm font-bold self-center">
-                        {{ log.is_finished ? '● 已审核' : '○ 待办' }}
-                    </div>
-                </div>
-            </section>
-
-            <!-- 4. 问题汇总 -->
-            <section v-if="currentTab === 'issues'" class="card p-0 overflow-hidden">
-                <table class="w-full text-left border-collapse">
-                    <thead class="bg-gray-50 border-b text-sm"><tr><th class="p-4">日期</th><th class="p-4">来源</th><th class="p-4">问题描述</th><th class="p-4">处理状态</th></tr></thead>
-                    <tbody>
-                        <template v-for="log in logs">
-                            <tr v-for="(iss, idx) in log.issues" :key="log.id+idx" class="border-b text-sm">
-                                <td class="p-4 text-gray-400">{{ log.date }}</td>
-                                <td class="p-4 font-bold">{{ log.leader }}</td>
-                                <td class="p-4">{{ iss.content }}</td>
-                                <td class="p-4">
-                                    <select v-model="iss.status" @change="fastSyncIssue(log)" class="bg-transparent border rounded text-xs p-1 cursor-pointer">
-                                        <option value="未讨论">未讨论</option>
-                                        <option value="进行中">进行中</option>
-                                        <option value="已解决">已解决</option>
-                                    </select>
-                                </td>
-                            </tr>
-                        </template>
-                    </tbody>
-                </table>
-            </section>
-
-            <!-- 日志弹窗 -->
-            <div v-if="editLogData" class="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-[100]">
-                <div class="bg-white p-6 rounded-lg w-full max-w-md shadow-2xl">
-                    <h3 class="text-lg font-bold mb-4">编辑工作日志</h3>
-                    <div class="grid grid-cols-2 gap-3 mb-4">
-                        <div><label class="text-xs text-gray-400 block">负责日期</label><input type="date" v-model="editLogData.date" class="w-full border p-2 rounded"></div>
-                        <div><label class="text-xs text-gray-400 block">今日负责人</label><input type="text" v-model="editLogData.leader" class="w-full border p-2 rounded"></div>
-                    </div>
-                    <label class="flex items-center space-x-2 mb-4 p-2 bg-blue-50 rounded cursor-pointer">
-                        <input type="checkbox" v-model="editLogData.is_finished"> <span class="text-sm font-bold">审核已完成</span>
-                    </label>
-                    <div class="mb-6">
-                        <div class="flex justify-between mb-2"><span class="text-sm font-bold">问题反馈:</span><button @click="editLogData.issues.push({content:'', status:'未讨论'})" class="text-blue-500 text-xs">+ 添加</button></div>
-                        <div v-for="(iss, i) in editLogData.issues" :key="i" class="flex gap-2 mb-2">
-                            <input v-model="iss.content" placeholder="输入问题..." class="flex-grow border-b text-sm py-1 outline-none">
-                            <button @click="editLogData.issues.splice(i,1)" class="text-red-300">✕</button>
+                    <div class="mb-4">
+                        <div class="flex justify-between font-bold text-sm mb-2">问题反馈 <button @click="editLog.issues.push({content:'', status:'未讨论'})" class="text-blue-500">+添加</button></div>
+                        <div v-for="(iss, i) in editLog.issues" class="flex mb-2 gap-2">
+                            <input v-model="iss.content" class="flex-grow border-b text-sm">
+                            <button @click="editLog.issues.splice(i,1)" class="text-red-300">×</button>
                         </div>
                     </div>
                     <div class="flex justify-end gap-4">
-                        <button @click="editLogData = null" class="text-gray-400">取消</button>
-                        <button @click="saveLogEntry" class="btn-blue px-6">保存同步</button>
+                        <button @click="editLog=null">取消</button>
+                        <button @click="saveLog" class="bg-blue-600 text-white px-4 py-1 rounded">保存同步</button>
                     </div>
                 </div>
             </div>
         </main>
     </div>
 
-    <!-- 所有的 JavaScript 放在最后，确保 Vue 已加载 -->
+    <!-- 2. 载入脚本 - 放在 Body 最后确保 DOM 已生成 -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
     <script>
-        window.addEventListener('load', function() {
+        // 定义一个初始化函数，防止库还没加载完就运行
+        function initApp() {
+            if (typeof Vue === 'undefined' || typeof supabase === 'undefined') {
+                console.log('正在等待库加载...');
+                setTimeout(initApp, 100);
+                return;
+            }
+
             const { createApp, ref, onMounted } = Vue;
+            const S_URL = 'https://zapiekidlfpyjvlvnrhc.supabase.co';
+            const S_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InphcGlla2lkbGZweWp2bHZucmhjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA0OTE3NTMsImV4cCI6MjA5NjA2Nzc1M30.1QGzAJQMj45KSyiFfuP_EPNqcKgoPMQO3aplqvn1iOc';
+            const _client = supabase.createClient(S_URL, S_KEY);
 
-            const CONF_URL = 'https://zapiekidlfpyjvlvnrhc.supabase.co';
-            const CONF_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InphcGlla2lkbGZweWp2bHZucmhjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA0OTE3NTMsImV4cCI6MjA5NjA2Nzc1M30.1QGzAJQMj45KSyiFfuP_EPNqcKgoPMQO3aplqvn1iOc';
-            
-            const _supabase = window.supabase.createClient(CONF_URL, CONF_KEY);
-
-            const myApp = createApp({
+            createApp({
                 setup() {
                     const currentTab = ref('workflow');
                     const loading = ref(false);
                     const config = ref({ workflow_text: '', workflow_images: [], schedules: [] });
                     const logs = ref([]);
-                    const editLogData = ref(null);
+                    const editLog = ref(null);
                     const tabs = [
                         {id:'workflow', name:'工作流程'}, {id:'schedule', name:'排班计划'}, 
                         {id:'logs', name:'每日记录'}, {id:'issues', name:'问题汇总'}
                     ];
 
-                    const fetchCloudData = async () => {
+                    const load = async () => {
                         loading.value = true;
                         try {
-                            const { data: c } = await _supabase.from('project_config').select('*').eq('id', 1).single();
+                            const { data: c } = await _client.from('project_config').select('*').eq('id', 1).single();
                             if (c) config.value = c;
-
-                            const { data: l } = await _supabase.from('daily_logs').select('*').order('date', { ascending: false });
+                            const { data: l } = await _client.from('daily_logs').select('*').order('date', {ascending:false});
                             logs.value = l || [];
                         } catch (e) { console.error(e); }
                         loading.value = false;
                     };
 
-                    const saveProjectConfig = async () => {
+                    const saveConfig = async () => {
                         loading.value = true;
-                        const { error } = await _supabase.from('project_config').upsert({
-                            id: 1,
-                            workflow_text: config.value.workflow_text,
-                            workflow_images: config.value.workflow_images,
-                            schedules: config.value.schedules
-                        });
-                        if (!error) alert('✅ 成功保存到云端');
-                        else alert('保存失败: ' + error.message);
+                        await _client.from('project_config').upsert({ id: 1, ...config.value });
+                        alert('同步成功');
                         loading.value = false;
                     };
 
-                    const uploadImage = async (e) => {
+                    const uploadImg = async (e) => {
                         const file = e.target.files[0];
                         if (!file) return;
                         loading.value = true;
-                        const name = `file_${Date.now()}`;
-                        const { data } = await _supabase.storage.from('images').upload(name, file);
+                        const name = `img_${Date.now()}`;
+                        const { data } = await _client.storage.from('images').upload(name, file);
                         if (data) {
-                            const { data: { publicUrl } } = _supabase.storage.from('images').getPublicUrl(name);
+                            const { data: { publicUrl } } = _client.storage.from('images').getPublicUrl(name);
                             config.value.workflow_images.push(publicUrl);
-                        } else { alert('上传失败，请检查 Storage 权限'); }
+                        }
                         loading.value = false;
                     };
 
-                    const openLogEdit = (l = null) => {
-                        if (l) editLogData.value = JSON.parse(JSON.stringify(l));
-                        else editLogData.value = { date: new Date().toISOString().split('T')[0], leader:'', is_finished:false, issues:[] };
+                    const openLog = (l = null) => {
+                        editLog.value = l ? JSON.parse(JSON.stringify(l)) : { date: new Date().toISOString().split('T')[0], leader: '', issues: [] };
                     };
 
-                    const saveLogEntry = async () => {
+                    const saveLog = async () => {
                         loading.value = true;
-                        const { error } = await _supabase.from('daily_logs').upsert(editLogData.value);
-                        if (!error) { editLogData.value = null; fetchCloudData(); }
-                        else { alert('保存失败: ' + error.message); }
-                        loading.value = false;
+                        await _client.from('daily_logs').upsert(editLog.value);
+                        editLog.value = null;
+                        load();
                     };
 
-                    const fastSyncIssue = async (l) => {
-                        await _supabase.from('daily_logs').update({ issues: l.issues }).eq('id', l.id);
+                    const syncLog = async (l) => {
+                        await _client.from('daily_logs').update({ issues: l.issues }).eq('id', l.id);
                     };
 
-                    onMounted(fetchCloudData);
-
-                    return { tabs, currentTab, loading, config, logs, editLogData, saveProjectConfig, uploadImage, openLogEdit, saveLogEntry, fastSyncIssue };
+                    onMounted(load);
+                    return { tabs, currentTab, loading, config, logs, editLog, saveConfig, uploadImg, openLog, saveLog, syncLog };
                 }
-            });
+            }).mount('#app');
+        }
 
-            myApp.mount('#app');
-        });
+        // 启动初始化
+        initApp();
     </script>
 </body>
 </html>

@@ -1,156 +1,97 @@
-<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>小北X计划 - 后台管理</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <style>
-        .active-tab { border-bottom: 3px solid #2563eb; color: #2563eb; font-weight: bold; }
-        [v-cloak] { display: none; }
-        .card { background: white; border-radius: 0.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1); padding: 1.5rem; }
-    </style>
-</head>
-<body class="bg-gray-50 text-gray-900">
-    <div id="app" v-cloak>
-        <nav class="bg-white border-b sticky top-0 z-50">
-            <div class="max-w-5xl mx-auto px-6 py-4 flex justify-between items-center">
-                <h1 class="text-xl font-bold text-blue-600">小北X计划后台</h1>
-                <div class="flex space-x-6 text-sm">
-                    <button v-for="t in tabs" @click="currentTab = t.id" :class="[currentTab === t.id ? 'active-tab' : 'text-gray-500']">{{ t.name }}</button>
-                </div>
-                <div v-if="loading" class="text-xs text-blue-500">同步中...</div>
-            </div>
-        </nav>
+<script>
+    const { createApp, ref, onMounted } = Vue;
 
-        <main class="max-w-5xl mx-auto p-6">
-            <!-- 1. 工作流程 -->
-            <div v-if="currentTab === 'workflow'" class="card">
-                <div class="flex justify-between mb-4"><h2 class="font-bold">工作流程</h2><button @click="saveConfig" class="bg-blue-600 text-white px-4 py-1 rounded text-sm">保存</button></div>
-                <textarea v-model="config.workflow_text" class="w-full border rounded p-3 h-48 mb-4"></textarea>
-                <input type="file" @change="uploadImage" class="text-sm">
-                <div class="grid grid-cols-3 gap-4 mt-4">
-                    <img v-for="url in config.workflow_images" :src="url" class="rounded border h-32 w-full object-cover">
-                </div>
-            </div>
+    // 1. 这里的信息是正确的
+    const SUPABASE_URL = 'https://zapiekidlfpyjvlvnrhc.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InphcGlla2lkbGZweWp2bHZucmhjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA0OTE3NTMsImV4cCI6MjA5NjA2Nzc1M30.1QGzAJQMj45KSyiFfuP_EPNqcKgoPMQO3aplqvn1iOc';
+    
+    // 2. 只在这里定义一次 supabase 客户端
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-            <!-- 2. 排班计划 -->
-            <div v-if="currentTab === 'schedule'" class="card">
-                <div class="flex justify-between mb-4"><h2 class="font-bold">排班计划</h2><button @click="saveConfig" class="bg-blue-600 text-white px-4 py-1 rounded text-sm">保存</button></div>
-                <table class="w-full text-left border-collapse">
-                    <tr class="bg-gray-50 border-b"><th class="p-2">时间/次序</th><th class="p-2">负责人</th><th class="p-2">备注</th></tr>
-                    <tr v-for="s in config.schedules" class="border-b">
-                        <td class="p-2"><input v-model="s.t" class="w-full outline-none"></td>
-                        <td class="p-2"><input v-model="s.n" class="w-full outline-none"></td>
-                        <td class="p-2"><input v-model="s.v" class="w-full outline-none"></td>
-                    </tr>
-                </table>
-                <button @click="config.schedules.push({t:'',n:'',v:''})" class="mt-4 text-blue-500 text-sm">+ 添加一行</button>
-            </div>
+    createApp({
+        setup() {
+            const currentTab = ref('workflow');
+            const loading = ref(false);
+            const config = ref({ workflow_text: '', workflow_images: [], schedules: [] });
+            const logs = ref([]);
+            const editLog = ref(null);
+            const tabs = [
+                {id:'workflow', name:'工作流程'}, 
+                {id:'schedule', name:'排班计划'}, 
+                {id:'logs', name:'每日记录'}, 
+                {id:'issues', name:'问题汇总'}
+            ];
 
-            <!-- 3. 工作日志 -->
-            <div v-if="currentTab === 'logs'" class="space-y-4">
-                <div class="flex justify-between"><h2 class="font-bold">每日记录</h2><button @click="openLog()" class="bg-green-600 text-white px-4 py-2 rounded text-sm">+ 新增记录</button></div>
-                <div v-for="log in logs" @click="openLog(log)" class="card cursor-pointer hover:border-blue-400 border border-transparent">
-                    <div class="font-bold">{{log.date}} - 负责人: {{log.leader}}</div>
-                </div>
-            </div>
-
-            <!-- 4. 问题汇总 -->
-            <div v-if="currentTab === 'issues'" class="card p-0">
-                <table class="w-full text-left">
-                    <thead class="bg-gray-100"><tr><th class="p-3">日期</th><th class="p-3">负责人</th><th class="p-3">问题</th><th class="p-3">状态</th></tr></thead>
-                    <template v-for="log in logs"><tr v-for="iss in log.issues" class="border-t text-sm">
-                        <td class="p-3">{{log.date}}</td><td class="p-3">{{log.leader}}</td><td class="p-3">{{iss.content}}</td>
-                        <td class="p-3"><select v-model="iss.status" @change="syncIssueStatus(log)"><option>未讨论</option><option>进行中</option><option>已解决</option></select></td>
-                    </tr></template>
-                </table>
-            </div>
-
-            <!-- 日志弹窗 -->
-            <div v-if="editLog" class="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-[100]">
-                <div class="bg-white p-6 rounded-lg w-full max-w-md shadow-xl">
-                    <h3 class="font-bold mb-4">编辑记录</h3>
-                    <input type="date" v-model="editLog.date" class="w-full border p-2 mb-2">
-                    <input type="text" v-model="editLog.leader" placeholder="负责人" class="w-full border p-2 mb-4">
-                    <div class="mb-4">
-                        <div class="flex justify-between mb-2 font-bold text-sm">问题记录 <button @click="editLog.issues.push({content:'', status:'未讨论'})" class="text-blue-500">+添加</button></div>
-                        <div v-for="(iss, i) in editLog.issues" class="flex mb-2 gap-2">
-                            <input v-model="iss.content" class="flex-grow border-b text-sm">
-                            <button @click="editLog.issues.splice(i,1)" class="text-red-300">×</button>
-                        </div>
-                    </div>
-                    <div class="flex justify-end gap-4"><button @click="editLog=null">取消</button><button @click="saveLog" class="bg-blue-600 text-white px-4 py-1 rounded">保存同步</button></div>
-                </div>
-            </div>
-        </main>
-    </div>
-
-    <script>
-        const { createApp, ref, onMounted } = Vue;
-        const SUPABASE_URL = 'https://zapiekidlfpyjvlvnrhc.supabase.co';
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InphcGlla2lkbGZweWp2bHZucmhjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA0OTE3NTMsImV4cCI6MjA5NjA2Nzc1M30.1QGzAJQMj45KSyiFfuP_EPNqcKgoPMQO3aplqvn1iOc';
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
-        createApp({
-            setup() {
-                const currentTab = ref('workflow');
-                const loading = ref(false);
-                const config = ref({ workflow_text: '', workflow_images: [], schedules: [] });
-                const logs = ref([]);
-                const editLog = ref(null);
-                const tabs = [{id:'workflow', name:'工作流程'}, {id:'schedule', name:'排班计划'}, {id:'logs', name:'每日记录'}, {id:'issues', name:'问题汇总'}];
-
-                const fetchData = async () => {
-                    loading.value = true;
-                    const { data: cfg } = await supabase.from('project_config').select('*').eq('id', 1).single();
+            // 获取数据
+            const fetchData = async () => {
+                loading.value = true;
+                try {
+                    const { data: cfg } = await supabaseClient.from('project_config').select('*').eq('id', 1).single();
                     if (cfg) config.value = cfg;
-                    const { data: lg } = await supabase.from('daily_logs').select('*').order('date', { ascending: false });
+
+                    const { data: lg } = await supabaseClient.from('daily_logs').select('*').order('date', { ascending: false });
                     logs.value = lg || [];
+                } catch (err) {
+                    console.error('获取数据失败:', err);
+                } finally {
                     loading.value = false;
-                };
+                }
+            };
 
-                const saveConfig = async () => {
-                    loading.value = true;
-                    await supabase.from('project_config').upsert({ id: 1, ...config.value });
-                    alert('已同步到云端');
-                    loading.value = false;
-                };
+            // 保存配置
+            const saveConfig = async () => {
+                loading.value = true;
+                const { error } = await supabaseClient.from('project_config').upsert({ 
+                    id: 1, 
+                    workflow_text: config.value.workflow_text,
+                    workflow_images: config.value.workflow_images,
+                    schedules: config.value.schedules
+                });
+                if (!error) alert('✅ 已成功保存到云端');
+                else alert('保存失败: ' + error.message);
+                loading.value = false;
+            };
 
-                const uploadImage = async (e) => {
-                    const file = e.target.files[0];
-                    if (!file) return;
-                    loading.value = true;
-                    const fileName = `${Date.now()}_${file.name}`;
-                    const { data } = await supabase.storage.from('images').upload(fileName, file);
-                    if (data) {
-                        const { data: { publicUrl } } = supabase.storage.from('images').getPublicUrl(fileName);
-                        config.value.workflow_images.push(publicUrl);
-                    }
-                    loading.value = false;
-                };
+            // 上传图片
+            const uploadImage = async (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+                loading.value = true;
+                const fileName = `${Date.now()}_${file.name}`;
+                const { data, error } = await supabaseClient.storage.from('images').upload(fileName, file);
+                if (data) {
+                    const { data: { publicUrl } } = supabaseClient.storage.from('images').getPublicUrl(fileName);
+                    config.value.workflow_images.push(publicUrl);
+                } else {
+                    alert('图片上传失败，请检查 Storage 桶 Policy 设置');
+                }
+                loading.value = false;
+            };
 
-                const openLog = (log = null) => {
-                    editLog.value = log ? JSON.parse(JSON.stringify(log)) : { date: new Date().toISOString().split('T')[0], leader: '', is_finished: false, issues: [] };
-                };
+            const openLog = (log = null) => {
+                if (log) editLog.value = JSON.parse(JSON.stringify(log));
+                else editLog.value = { date: new Date().toISOString().split('T')[0], leader: '', is_finished: false, issues: [] };
+            };
 
-                const saveLog = async () => {
-                    loading.value = true;
-                    await supabase.from('daily_logs').upsert(editLog.value);
+            const saveLog = async () => {
+                loading.value = true;
+                const { error } = await supabaseClient.from('daily_logs').upsert(editLog.value);
+                if (!error) {
                     editLog.value = null;
                     fetchData();
-                };
+                } else {
+                    alert('保存日志失败: ' + error.message);
+                }
+                loading.value = false;
+            };
 
-                const syncIssueStatus = async (log) => {
-                    await supabase.from('daily_logs').update({ issues: log.issues }).eq('id', log.id);
-                };
+            const syncIssueStatus = async (log) => {
+                await supabaseClient.from('daily_logs').update({ issues: log.issues }).eq('id', log.id);
+            };
 
-                onMounted(fetchData);
-                return { tabs, currentTab, loading, config, logs, editLog, saveConfig, uploadImage, openLog, saveLog, syncIssueStatus };
-            }
-        }).mount('#app');
-    </script>
-</body>
-</html>
+            onMounted(fetchData);
+
+            return { tabs, currentTab, loading, config, logs, editLog, saveConfig, uploadImage, openLog, saveLog, syncIssueStatus };
+        }
+    }).mount('#app');
+</script>

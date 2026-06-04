@@ -4,113 +4,190 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>小北管理员</title>
-    <!-- 1. 载入样式 -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         [v-cloak] { display: none; }
         .active-tab { border-bottom: 3px solid #2563eb; color: #2563eb; font-weight: bold; }
-        .card { background: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); padding: 20px; }
+        .card { background: white; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); padding: 24px; border: 1px solid #e5e7eb; }
+        .btn-save { background: #2563eb; color: white; padding: 0.5rem 1.5rem; border-radius: 0.5rem; font-weight: 600; transition: all 0.2s; }
+        .btn-save:hover { background: #1d4ed8; transform: translateY(-1px); }
+        input[type="checkbox"] { width: 1.2rem; height: 1.2rem; cursor: pointer; }
     </style>
 </head>
-<body class="bg-gray-50">
+<body class="bg-slate-50 text-slate-900">
 
     <div id="app" v-cloak>
+        <!-- 导航栏 -->
         <nav class="bg-white border-b sticky top-0 z-50 px-6 py-4">
-            <div class="max-w-5xl mx-auto flex justify-between items-center">
-                <h1 class="text-xl font-bold text-blue-600">小北X计划后台</h1>
-                <div class="flex space-x-6">
-                    <button v-for="t in tabs" @click="currentTab = t.id" :class="[currentTab === t.id ? 'active-tab' : 'text-gray-500']" class="pb-1 text-sm">{{t.name}}</button>
+            <div class="max-w-6xl mx-auto flex justify-between items-center">
+                <div class="flex items-center space-x-2">
+                    <span class="bg-blue-600 text-white p-1 rounded font-bold">XB</span>
+                    <h1 class="text-xl font-bold tracking-tight">小北X计划后台</h1>
                 </div>
-                <div v-if="loading" class="text-xs text-blue-400">同步中...</div>
+                <div class="flex space-x-8">
+                    <button v-for="t in tabs" @click="currentTab = t.id" :class="[currentTab === t.id ? 'active-tab' : 'text-slate-500 hover:text-blue-500']" class="pb-1 text-sm transition-colors">{{t.name}}</button>
+                </div>
+                <div v-if="loading" class="text-xs text-blue-500 animate-pulse font-medium">云端同步中...</div>
+                <div v-else class="w-12"></div>
             </div>
         </nav>
 
-        <main class="max-w-5xl mx-auto p-6">
-            <!-- 切换内容 -->
-            <div v-if="currentTab === 'workflow'" class="card">
-                <div class="flex justify-between mb-4"><h2 class="font-bold">工作流程</h2><button @click="saveConfig" class="bg-blue-600 text-white px-4 py-1 rounded text-sm">保存</button></div>
-                <textarea v-model="config.workflow_text" class="w-full border p-3 h-48 mb-4 rounded"></textarea>
-                <input type="file" @change="uploadImg" class="text-xs">
-                <div class="grid grid-cols-3 gap-4 mt-4">
-                    <img v-for="url in config.workflow_images" :src="url" class="rounded border h-32 w-full object-cover">
-                </div>
-            </div>
-
-            <div v-if="currentTab === 'schedule'" class="card">
-                <div class="flex justify-between mb-4"><h2 class="font-bold">排班计划</h2><button @click="saveConfig" class="bg-blue-600 text-white px-4 py-1 rounded text-sm">保存</button></div>
-                <table class="w-full text-left border-collapse">
-                    <tr class="bg-gray-50 border-b"><th class="p-2">时间</th><th class="p-2">负责人</th><th class="p-2">备注</th></tr>
-                    <tr v-for="s in config.schedules" class="border-b">
-                        <td class="p-2"><input v-model="s.t" class="w-full outline-none"></td>
-                        <td class="p-2"><input v-model="s.n" class="w-full outline-none"></td>
-                        <td class="p-2"><input v-model="s.v" class="w-full outline-none"></td>
-                    </tr>
-                </table>
-                <button @click="config.schedules.push({t:'',n:'',v:''})" class="mt-4 text-blue-500 text-sm">+ 添加行</button>
-            </div>
-
-            <div v-if="currentTab === 'logs'" class="space-y-4">
-                <div class="flex justify-between"><h2 class="font-bold">每日记录</h2><button @click="openLog()" class="bg-green-600 text-white px-4 py-2 rounded text-sm">+ 新增</button></div>
-                <div v-for="log in logs" @click="openLog(log)" class="card cursor-pointer hover:border-blue-400 border border-transparent">
-                    <div class="font-bold">{{log.date}} - 负责人: {{log.leader}}</div>
-                </div>
-            </div>
-
-            <div v-if="currentTab === 'issues'" class="card p-0">
-                <table class="w-full text-left">
-                    <thead class="bg-gray-100"><tr><th class="p-3">日期</th><th class="p-3">负责人</th><th class="p-3">问题</th><th class="p-3">状态</th></tr></thead>
-                    <template v-for="log in logs">
-                        <tr v-for="iss in log.issues" class="border-t text-sm">
-                            <td class="p-3 text-gray-400">{{log.date}}</td>
-                            <td class="p-3 font-bold">{{log.leader}}</td>
-                            <td class="p-3">{{iss.content}}</td>
-                            <td class="p-3">
-                                <select v-model="iss.status" @change="syncLog(log)" class="border rounded text-xs p-1">
-                                    <option>未讨论</option><option>进行中</option><option>已解决</option>
-                                </select>
-                            </td>
-                        </tr>
-                    </template>
-                </table>
-            </div>
-
-            <!-- 弹窗 -->
-            <div v-if="editLog" class="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-[100]">
-                <div class="bg-white p-6 rounded-lg w-full max-w-md">
-                    <h3 class="font-bold mb-4">编辑日志</h3>
-                    <div class="grid grid-cols-2 gap-2 mb-4">
-                        <input type="date" v-model="editLog.date" class="border p-2 rounded">
-                        <input type="text" v-model="editLog.leader" placeholder="负责人" class="border p-2 rounded">
+        <main class="max-w-6xl mx-auto p-6">
+            
+            <!-- 1. 工作流程 (包含新增的用户分类) -->
+            <div v-if="currentTab === 'workflow'" class="space-y-6">
+                <div class="card">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-lg font-bold">工作流程 & 资料</h2>
+                        <button @click="saveConfig" class="btn-save">同步所有更改</button>
                     </div>
-                    <div class="mb-4">
-                        <div class="flex justify-between font-bold text-sm mb-2">问题反馈 <button @click="editLog.issues.push({content:'', status:'未讨论'})" class="text-blue-500">+添加</button></div>
-                        <div v-for="(iss, i) in editLog.issues" class="flex mb-2 gap-2">
-                            <input v-model="iss.content" class="flex-grow border-b text-sm">
-                            <button @click="editLog.issues.splice(i,1)" class="text-red-300">×</button>
+                    
+                    <label class="block text-sm font-bold text-slate-500 mb-2">文字说明</label>
+                    <textarea v-model="config.workflow_text" class="w-full border p-4 h-40 mb-6 rounded-lg focus:ring-2 focus:ring-blue-100 outline-none border-slate-200" placeholder="在此输入工作流程..."></textarea>
+                    
+                    <div class="border-t pt-6 mb-6">
+                        <label class="block text-sm font-bold text-slate-500 mb-2">图片资料 (可点选右上角删除)</label>
+                        <input type="file" @change="uploadImg" class="text-xs block mb-4 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:bg-blue-50 file:text-blue-700">
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                            <div v-for="(url, idx) in config.workflow_images" :key="idx" class="relative group">
+                                <img :src="url" class="rounded-lg border h-32 w-full object-cover">
+                                <button @click="config.workflow_images.splice(idx,1)" class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs shadow-lg hover:bg-red-600">✕</button>
+                            </div>
                         </div>
                     </div>
-                    <div class="flex justify-end gap-4">
-                        <button @click="editLog=null">取消</button>
-                        <button @click="saveLog" class="bg-blue-600 text-white px-4 py-1 rounded">保存同步</button>
+
+                    <!-- 新增功能：积极用户与问题用户 -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 border-t pt-6">
+                        <div class="bg-green-50 p-4 rounded-xl border border-green-100">
+                            <label class="block text-green-700 font-bold mb-2 flex items-center">
+                                <span class="mr-2">🌟</span> 积极用户名单
+                            </label>
+                            <textarea v-model="config.active_users" class="w-full bg-white border border-green-200 rounded-lg p-3 h-32 outline-none focus:ring-2 focus:ring-green-200 text-sm" placeholder="输入名单..."></textarea>
+                        </div>
+                        <div class="bg-red-50 p-4 rounded-xl border border-red-100">
+                            <label class="block text-red-700 font-bold mb-2 flex items-center">
+                                <span class="mr-2">⚠️</span> 问题用户名单
+                            </label>
+                            <textarea v-model="config.problem_users" class="w-full bg-white border border-red-200 rounded-lg p-3 h-32 outline-none focus:ring-2 focus:ring-red-200 text-sm" placeholder="输入名单..."></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. 排班计划 (增加勾选框和删除) -->
+            <div v-if="currentTab === 'schedule'" class="card">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-lg font-bold">排班计划表</h2>
+                    <div class="space-x-4">
+                        <button @click="config.schedules.push({t:'', n:'', done: false, v:''})" class="text-blue-600 font-bold text-sm hover:underline">+ 添加行</button>
+                        <button @click="saveConfig" class="btn-save">同步到云端</button>
+                    </div>
+                </div>
+                <div class="overflow-hidden rounded-lg border border-slate-200">
+                    <table class="w-full text-left border-collapse bg-white">
+                        <thead class="bg-slate-50">
+                            <tr>
+                                <th class="p-4 text-xs font-bold text-slate-500 uppercase">时间/次序</th>
+                                <th class="p-4 text-xs font-bold text-slate-500 uppercase">负责人</th>
+                                <th class="p-4 text-xs font-bold text-slate-500 uppercase w-24 text-center">已完成</th>
+                                <th class="p-4 text-xs font-bold text-slate-500 uppercase">备注</th>
+                                <th class="p-4 w-16"></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="(s, i) in config.schedules" :key="i" class="border-t hover:bg-slate-50">
+                                <td class="p-2"><input v-model="s.t" class="w-full p-2 outline-none bg-transparent" placeholder="例: 周一"></td>
+                                <td class="p-2"><input v-model="s.n" class="w-full p-2 outline-none bg-transparent font-medium" placeholder="姓名"></td>
+                                <td class="p-2 text-center"><input type="checkbox" v-model="s.done" class="accent-blue-600"></td>
+                                <td class="p-2"><input v-model="s.v" class="w-full p-2 outline-none bg-transparent text-slate-500 text-sm" placeholder="..."></td>
+                                <td class="p-2 text-center"><button @click="config.schedules.splice(i,1)" class="text-slate-300 hover:text-red-500 transition-colors">✕</button></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- 3. 工作日志 -->
+            <div v-if="currentTab === 'logs'" class="space-y-4">
+                <div class="flex justify-between items-center"><h2 class="text-lg font-bold">每日工作记录</h2><button @click="openLog()" class="bg-green-600 text-white px-6 py-2 rounded-lg font-bold shadow-lg hover:bg-green-700">+ 新增今日记录</button></div>
+                <div class="grid grid-cols-1 gap-3">
+                    <div v-for="log in logs" @click="openLog(log)" class="card flex justify-between items-center cursor-pointer hover:border-blue-400 border-2 border-transparent transition-all group">
+                        <div class="flex items-center space-x-6">
+                            <div class="bg-slate-100 p-2 rounded-lg text-center min-w-[80px]">
+                                <div class="text-xs text-slate-400 font-bold">{{log.date.split('-')[0]}}</div>
+                                <div class="text-lg font-black text-slate-700">{{log.date.split('-').slice(1).join('/')}}</div>
+                            </div>
+                            <div>
+                                <div class="font-bold text-slate-800">负责人: {{log.leader || '未填'}}</div>
+                                <div class="text-sm text-slate-400">发现问题: {{log.issues ? log.issues.length : 0}} 个</div>
+                            </div>
+                        </div>
+                        <div class="flex items-center space-x-4">
+                            <span v-if="log.is_finished" class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-bold">审核通过</span>
+                            <span class="text-slate-300 group-hover:text-blue-500">详情 ></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 4. 问题汇总 -->
+            <div v-if="currentTab === 'issues'" class="card p-0 overflow-hidden">
+                <table class="w-full text-left">
+                    <thead class="bg-slate-50 border-b"><tr><th class="p-4 text-sm font-bold">日期</th><th class="p-4 text-sm font-bold">负责人</th><th class="p-4 text-sm font-bold">问题描述</th><th class="p-4 text-sm font-bold text-right">状态</th></tr></thead>
+                    <tbody>
+                        <template v-for="log in logs">
+                            <tr v-for="iss in log.issues" class="border-b hover:bg-slate-50 transition-colors">
+                                <td class="p-4 text-sm text-slate-400">{{log.date}}</td>
+                                <td class="p-4 font-bold text-slate-700">{{log.leader}}</td>
+                                <td class="p-4 text-slate-600">{{iss.content}}</td>
+                                <td class="p-4 text-right">
+                                    <select v-model="iss.status" @change="syncLog(log)" :class="{'text-green-600 font-bold':iss.status==='已解决','text-red-500':iss.status==='未讨论'}" class="bg-transparent border-none outline-none cursor-pointer text-sm">
+                                        <option>未讨论</option><option>进行中</option><option>已解决</option>
+                                    </select>
+                                </td>
+                            </tr>
+                        </template>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- 日志编辑弹窗 (包含问题修改和删除) -->
+            <div v-if="editLog" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-[100]">
+                <div class="bg-white p-8 rounded-2xl w-full max-w-xl shadow-2xl animate-in zoom-in duration-200">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-xl font-bold">编辑每日记录</h3>
+                        <button @click="deleteFullLog" v-if="editLog.id" class="text-red-400 text-xs hover:text-red-600">删除此条日志</button>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4 mb-6">
+                        <div><label class="text-xs font-bold text-slate-400 block mb-1">负责日期</label><input type="date" v-model="editLog.date" class="w-full border border-slate-200 p-2 rounded-lg"></div>
+                        <div><label class="text-xs font-bold text-slate-400 block mb-1">今日负责人</label><input type="text" v-model="editLog.leader" placeholder="姓名" class="w-full border border-slate-200 p-2 rounded-lg"></div>
+                    </div>
+                    <label class="flex items-center space-x-3 mb-6 p-4 bg-slate-50 rounded-xl cursor-pointer hover:bg-blue-50 transition-colors border border-transparent hover:border-blue-100">
+                        <input type="checkbox" v-model="editLog.is_finished" class="accent-blue-600"> 
+                        <span class="font-bold text-slate-700">审核完成情况：今日任务已全部核对</span>
+                    </label>
+                    <div class="mb-8">
+                        <div class="flex justify-between items-center mb-4"><span class="font-bold text-slate-800">问题记录 (需手动修改内容)</span> <button @click="editLog.issues.push({content:'', status:'未讨论'})" class="text-blue-500 text-sm font-bold">+ 添加问题</button></div>
+                        <div class="space-y-3 max-h-40 overflow-y-auto pr-2">
+                            <div v-for="(iss, i) in editLog.issues" :key="i" class="flex items-center space-x-2 bg-slate-50 p-2 rounded-lg group">
+                                <input v-model="iss.content" placeholder="输入问题描述..." class="flex-grow bg-transparent text-sm border-none outline-none focus:ring-1 focus:ring-blue-400 rounded">
+                                <button @click="editLog.issues.splice(i,1)" class="text-slate-300 hover:text-red-500">✕</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex justify-end gap-4 border-t pt-6">
+                        <button @click="editLog=null" class="px-4 py-2 text-slate-400 font-bold">取消</button>
+                        <button @click="saveLog" class="bg-blue-600 text-white px-8 py-2 rounded-lg font-bold shadow-lg hover:bg-blue-700 transition-all">保存并同步</button>
                     </div>
                 </div>
             </div>
         </main>
     </div>
 
-    <!-- 2. 载入脚本 - 放在 Body 最后确保 DOM 已生成 -->
-    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
     <script>
-        // 定义一个初始化函数，防止库还没加载完就运行
-        function initApp() {
-            if (typeof Vue === 'undefined' || typeof supabase === 'undefined') {
-                console.log('正在等待库加载...');
-                setTimeout(initApp, 100);
-                return;
-            }
-
+        window.addEventListener('load', function() {
             const { createApp, ref, onMounted } = Vue;
             const S_URL = 'https://zapiekidlfpyjvlvnrhc.supabase.co';
             const S_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InphcGlla2lkbGZweWp2bHZucmhjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA0OTE3NTMsImV4cCI6MjA5NjA2Nzc1M30.1QGzAJQMj45KSyiFfuP_EPNqcKgoPMQO3aplqvn1iOc';
@@ -120,7 +197,7 @@
                 setup() {
                     const currentTab = ref('workflow');
                     const loading = ref(false);
-                    const config = ref({ workflow_text: '', workflow_images: [], schedules: [] });
+                    const config = ref({ workflow_text: '', workflow_images: [], schedules: [], active_users: '', problem_users: '' });
                     const logs = ref([]);
                     const editLog = ref(null);
                     const tabs = [
@@ -132,7 +209,7 @@
                         loading.value = true;
                         try {
                             const { data: c } = await _client.from('project_config').select('*').eq('id', 1).single();
-                            if (c) config.value = c;
+                            if (c) config.value = { ...config.value, ...c };
                             const { data: l } = await _client.from('daily_logs').select('*').order('date', {ascending:false});
                             logs.value = l || [];
                         } catch (e) { console.error(e); }
@@ -141,8 +218,8 @@
 
                     const saveConfig = async () => {
                         loading.value = true;
-                        await _client.from('project_config').upsert({ id: 1, ...config.value });
-                        alert('同步成功');
+                        const { error } = await _client.from('project_config').upsert({ id: 1, ...config.value });
+                        if (!error) alert('✅ 所有配置（包括用户名单）同步成功！');
                         loading.value = false;
                     };
 
@@ -160,7 +237,7 @@
                     };
 
                     const openLog = (l = null) => {
-                        editLog.value = l ? JSON.parse(JSON.stringify(l)) : { date: new Date().toISOString().split('T')[0], leader: '', issues: [] };
+                        editLog.value = l ? JSON.parse(JSON.stringify(l)) : { date: new Date().toISOString().split('T')[0], leader: '', is_finished: false, issues: [] };
                     };
 
                     const saveLog = async () => {
@@ -170,18 +247,24 @@
                         load();
                     };
 
+                    const deleteFullLog = async () => {
+                        if (confirm('确定要删除这条日志吗？删除后无法恢复。')) {
+                            loading.value = true;
+                            await _client.from('daily_logs').delete().eq('id', editLog.value.id);
+                            editLog.value = null;
+                            load();
+                        }
+                    };
+
                     const syncLog = async (l) => {
                         await _client.from('daily_logs').update({ issues: l.issues }).eq('id', l.id);
                     };
 
                     onMounted(load);
-                    return { tabs, currentTab, loading, config, logs, editLog, saveConfig, uploadImg, openLog, saveLog, syncLog };
+                    return { tabs, currentTab, loading, config, logs, editLog, saveConfig, uploadImg, openLog, saveLog, deleteFullLog, syncLog };
                 }
             }).mount('#app');
-        }
-
-        // 启动初始化
-        initApp();
+        });
     </script>
 </body>
 </html>

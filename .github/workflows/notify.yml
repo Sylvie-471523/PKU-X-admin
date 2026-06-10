@@ -2,11 +2,10 @@ name: 智能提醒机器人
 
 on:
   schedule:
-    # 北京时间 17:00 (UTC 09:00)
+    # 北京时间 17:00 和 19:00
     - cron: '0 9 * * *'
-    # 北京时间 19:00 (UTC 11:00)
     - cron: '0 11 * * *'
-  workflow_dispatch: # 允许手动点击按钮测试
+  workflow_dispatch: # 允许手动点击
 
 jobs:
   check_and_notify:
@@ -14,49 +13,40 @@ jobs:
     steps:
       - name: 执行检查逻辑
         run: |
-          # 1. 设置北京时间日期
+          # 1. 获取北京时间日期
           DATE=$(TZ='Asia/Shanghai' date +'%Y-%m-%d')
           echo "今日日期: $DATE"
 
-          # 2. 获取排班表 (增加错误处理)
-          echo "正在从 Supabase 获取排班数据..."
+          # 2. 获取排班表
           CONF=$(curl -s -f -X GET "${{ secrets.SUPABASE_URL }}/rest/v1/project_config?id=eq.1&select=calendar_schedule" \
             -H "apikey: ${{ secrets.SUPABASE_KEY }}" \
             -H "Authorization: Bearer ${{ secrets.SUPABASE_KEY }}")
           
-          if [ -z "$CONF" ]; then
-            echo "错误: 无法获取配置数据，请检查 SUPABASE_URL 和 KEY"
-            exit 0
-          fi
-          echo "获取到的配置: $CONF"
-
-          # 3. 提取今日值班人 (增加容错)
+          # 3. 提取今日值班人
           DUTY_USER=$(echo $CONF | grep -oP "(?<=\"$DATE\":\")[^\"]*" || echo "")
           echo "今日值班人: ${DUTY_USER:-未排班}"
 
           # 4. 检查今日日志是否已完成
-          echo "正在检查日志状态..."
           LOG=$(curl -s -X GET "${{ secrets.SUPABASE_URL }}/rest/v1/daily_logs?date=eq.$DATE&select=is_finished" \
             -H "apikey: ${{ secrets.SUPABASE_KEY }}" \
             -H "Authorization: Bearer ${{ secrets.SUPABASE_KEY }}")
           
-          echo "日志详情: $LOG"
-          
           # 判断是否包含 is_finished: true
           if echo "$LOG" | grep -q '"is_finished":true'; then
-            echo "✅ 今日任务已完成，跳过提醒。"
+            echo "✅ 任务已完成，无需提醒。"
           else
-            echo "⚠️ 任务未完成，准备发送微信提醒..."
+            echo "⚠️ 任务未完成，准备发送微信..."
             
-            # 发送提醒
-            curl -s -X POST "https://wxpusher.zjiecode.com/api/send/message" \
+            # 发送提醒并打印结果 (请确保下面填入了正确的 UID)
+            RESPONSE=$(curl -s -X POST "https://wxpusher.zjiecode.com/api/send/message" \
               -H "Content-Type: application/json" \
               -d "{
                 \"appToken\":\"${{ secrets.WXPUSHER_APP_TOKEN }}\",
-                \"content\":\"⚠️【小北催办】\n\n今日负责人：@${DUTY_USER:-请假/未排班}\n状态：尚未点击‘审核完成’！\n\n请及时登录后台完善记录。\n🔗 https://vivian16876-cyber.github.io/PKU-X-admin/\",
+                \"content\":\"⚠️【小北催办】\n\n今日负责人：@${DUTY_USER:-未排班}\n状态：尚未点击‘审核完成’状态！\n\n请及时登录后台完善记录。\n🔗 https://vivian16876-cyber.github.io/PKU-X-admin/\",
                 \"summary\":\"值班提醒：${DUTY_USER:-未排班}\",
                 \"contentType\":1,
-                \"uids\":[]
-              }"
-            echo "微信指令已发出。"
+                \"uids\":[\"UID_TFWRhBXNSGNfZVm1z5PFaRZb2ls8\"]
+              }")
+            
+            echo "微信推送结果: $RESPONSE"
           fi

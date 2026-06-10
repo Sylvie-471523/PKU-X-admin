@@ -4,24 +4,28 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>小北管理员</title>
+    <!-- 引入外部库 -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- 引入导出 Excel 所需的库 -->
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
     <style>
         [v-cloak] { display: none; }
         .active-tab { background: #2563eb; color: white !important; border-radius: 12px; }
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 1px; background: #f1f5f9; border-radius: 20px; overflow: hidden; border: 1px solid #f1f5f9; }
-        .calendar-day { background: white; min-height: 95px; padding: 10px; transition: 0.2s; }
+        .calendar-day { background: white; min-height: 100px; padding: 10px; transition: 0.2s; }
         .today { background: #fffbeb; border: 2px solid #fbbf24 !important; }
-        .card-shadow { box-shadow: 0 4px 20px -2px rgba(0,0,0,0.05); }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-900 font-sans">
 
     <div id="app" v-cloak>
         <div class="flex min-h-screen">
-            <!-- 侧边栏 -->
-            <aside class="w-64 bg-white border-r flex flex-col p-8 space-y-2 sticky top-0 h-screen">
+            <!-- 1. 侧边栏 -->
+            <aside class="w-72 bg-white border-r flex flex-col p-8 space-y-2 sticky top-0 h-screen">
                 <div class="mb-12 px-2">
                     <h1 class="text-2xl font-black text-slate-800 tracking-tighter italic">小北管理员</h1>
                     <div class="h-1.5 w-8 bg-blue-600 mt-2 rounded-full"></div>
@@ -30,8 +34,8 @@
                 <nav class="flex-grow space-y-1">
                     <button v-for="t in tabs" @click="currentTab = t.id" 
                         :class="[currentTab === t.id ? 'active-tab shadow-lg shadow-blue-100' : 'text-slate-500 hover:bg-slate-50']"
-                        class="w-full flex items-center space-x-3 px-4 py-3.5 text-sm font-bold transition-all text-left">
-                        <span>{{t.icon}}</span><span>{{t.name}}</span>
+                        class="w-full flex items-center space-x-3 px-4 py-4 text-sm font-bold transition-all text-left">
+                        <span class="text-lg">{{t.icon}}</span><span>{{t.name}}</span>
                     </button>
                 </nav>
 
@@ -39,31 +43,31 @@
                     <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-loose">我的身份设定</label>
                     <input v-model="myIdentity" @change="saveIdentity" 
                            class="w-full mt-2 bg-slate-50 border-none p-3 rounded-xl text-sm font-bold text-blue-600 focus:ring-1 focus:ring-blue-100 outline-none" 
-                           placeholder="输入你的名字">
+                           placeholder="输入名字后记日志将免填">
                 </div>
             </aside>
 
-            <!-- 主内容 -->
-            <main class="flex-grow p-10 max-w-6xl">
+            <!-- 2. 主内容区 -->
+            <main class="flex-grow p-10 max-w-6xl overflow-y-auto">
                 
-                <!-- 1. 手册名单 -->
+                <!-- 手册 & 名单 -->
                 <section v-show="currentTab === 'workflow'" class="space-y-6 animate-in fade-in duration-500">
-                    <div class="bg-white p-8 rounded-[40px] shadow-sm border border-slate-100 card-shadow">
+                    <div class="bg-white p-8 rounded-[40px] shadow-sm border border-slate-100">
                         <div class="flex justify-between items-center mb-8">
-                            <h2 class="text-2xl font-black text-slate-800 tracking-tight">手册 & 名单</h2>
-                            <button @click="saveConfig" class="bg-blue-600 text-white px-8 py-3 rounded-2xl font-bold shadow-xl shadow-blue-100 hover:scale-105 transition-all">保存全部修改</button>
+                            <h2 class="text-2xl font-black text-slate-800 tracking-tight">手册与名单</h2>
+                            <button @click="saveConfig" class="bg-blue-600 text-white px-8 py-3 rounded-2xl font-bold shadow-xl shadow-blue-100 hover:scale-105 transition-all">保存全部更改</button>
                         </div>
                         
                         <div class="mb-10">
-                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-3 block ml-2">工作指南 / 核心手册内容</label>
+                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-3 block ml-2">核心工作手册</label>
                             <textarea v-model="config.workflow_text" 
-                                class="w-full border-none bg-slate-50 p-8 h-[400px] rounded-[32px] focus:ring-2 focus:ring-blue-100 text-slate-700 leading-relaxed shadow-inner outline-none" 
-                                placeholder="在此处输入手册详细内容..."></textarea>
+                                class="w-full border-none bg-slate-50 p-8 h-[350px] rounded-[32px] focus:ring-2 focus:ring-blue-100 text-slate-700 leading-relaxed shadow-inner outline-none" 
+                                placeholder="输入详细内容..."></textarea>
                         </div>
                         
                         <div class="grid grid-cols-2 gap-8 mb-10">
-                            <div class="p-8 bg-blue-50/50 rounded-[32px] border border-blue-100">
-                                <label class="text-blue-800 font-black text-xs block mb-4 uppercase tracking-widest">🌟 积极用户名单</label>
+                            <div class="p-8 bg-emerald-50/50 rounded-[32px] border border-emerald-100">
+                                <label class="text-emerald-800 font-black text-xs block mb-4 uppercase tracking-widest">🌟 积极用户名单</label>
                                 <textarea v-model="config.active_users" class="w-full bg-transparent border-none focus:ring-0 text-sm h-32 leading-relaxed outline-none" placeholder="输入名单..."></textarea>
                             </div>
                             <div class="p-8 bg-rose-50/50 rounded-[32px] border border-rose-100">
@@ -74,7 +78,7 @@
 
                         <div class="grid grid-cols-4 gap-6">
                             <div v-for="(img, i) in config.workflow_images" :key="i" class="relative group aspect-square">
-                                <img :src="img" class="w-full h-full object-cover rounded-[24px] border border-slate-100 shadow-sm">
+                                <img :src="img" class="w-full h-full object-cover rounded-[24px] border border-slate-100">
                                 <button @click="config.workflow_images.splice(i,1)" class="absolute -top-3 -right-3 bg-red-500 text-white rounded-full w-7 h-7 flex items-center justify-center text-xs shadow-xl scale-0 group-hover:scale-100 transition-all">✕</button>
                             </div>
                             <label class="border-2 border-dashed border-slate-200 rounded-[24px] flex flex-col items-center justify-center text-slate-300 hover:border-blue-400 hover:text-blue-400 cursor-pointer aspect-square transition-all">
@@ -85,17 +89,18 @@
                     </div>
                 </section>
 
-                <!-- 2. 日历排班 -->
+                <!-- 日历排班 -->
                 <section v-show="currentTab === 'schedule'" class="animate-in fade-in duration-500">
-                    <div class="bg-white p-8 rounded-[40px] shadow-sm border border-slate-100 card-shadow">
+                    <div class="bg-white p-8 rounded-[40px] shadow-sm border border-slate-100">
                         <div class="flex justify-between items-end mb-8">
                             <div>
-                                <h2 class="text-2xl font-black text-slate-800 uppercase tracking-tighter">值班日历排班</h2>
-                                <p class="text-slate-400 text-xs font-bold mt-1">基准：2026/06/10 为 张一涵</p>
+                                <h2 class="text-2xl font-black text-slate-800">值班日历排班</h2>
+                                <p class="text-slate-400 text-xs font-bold mt-1 uppercase tracking-widest">Base: 2026/06/10 Start</p>
                             </div>
                             <div class="flex space-x-3">
+                                <button @click="exportSchedule" class="bg-emerald-50 text-emerald-600 px-5 py-2.5 rounded-2xl text-xs font-bold hover:bg-emerald-100 transition-all">导出排班 Excel</button>
                                 <button @click="autoFillMonth" class="bg-slate-50 text-slate-500 px-5 py-2.5 rounded-2xl text-xs font-bold hover:bg-slate-100 border border-slate-200 transition-all">一键填充本月循环</button>
-                                <button @click="saveConfig" class="bg-blue-600 text-white px-8 py-3 rounded-2xl font-bold shadow-xl shadow-blue-100 hover:scale-105 transition-all">保存更改</button>
+                                <button @click="saveConfig" class="bg-blue-600 text-white px-8 py-3 rounded-2xl font-bold shadow-xl shadow-blue-100 hover:bg-blue-700 transition-all">保存更改</button>
                             </div>
                         </div>
 
@@ -112,14 +117,14 @@
                     </div>
                 </section>
 
-                <!-- 3. 工作日志 -->
+                <!-- 工作日志记录 -->
                 <section v-show="currentTab === 'logs'" class="max-w-4xl space-y-4 animate-in fade-in duration-500">
                     <div class="flex justify-between items-center mb-8 px-2">
                         <h2 class="text-2xl font-black text-slate-800">日志动态库</h2>
                         <button @click="autoCreateLog()" class="bg-blue-600 text-white px-8 py-3 rounded-2xl font-bold shadow-lg shadow-blue-100 hover:bg-blue-700 transition-all">+ 快速记录今日</button>
                     </div>
                     
-                    <div v-for="log in logs" :key="log.id" class="bg-white p-8 rounded-[40px] border border-slate-100 hover:border-blue-400 transition-all flex justify-between items-center group card-shadow relative">
+                    <div v-for="log in logs" :key="log.id" class="bg-white p-8 rounded-[40px] border border-slate-100 hover:border-blue-400 transition-all flex justify-between items-center group relative shadow-sm">
                         <div @click="openLogEdit(log)" class="flex items-center space-x-8 flex-grow cursor-pointer">
                             <div class="text-center bg-slate-50 px-5 py-3 rounded-[20px] min-w-[75px]">
                                 <div class="text-[10px] font-black text-slate-300 uppercase">{{log.date.split('-')[1]}}月</div>
@@ -129,42 +134,48 @@
                                 <div class="font-bold text-lg text-slate-800 leading-tight">{{log.leader}}</div>
                                 <div class="flex space-x-3 mt-2">
                                     <span v-if="log.goodCount" class="text-sky-500 text-[10px] font-black bg-sky-50 px-3 py-1 rounded-full uppercase">✨ {{log.goodCount}} 精彩留言</span>
-                                    <span v-if="log.problemCount" class="text-rose-500 text-[10px] font-black bg-rose-50 px-3 py-1 rounded-full uppercase">🚨 {{log.problemCount}} 问题反馈</span>
+                                    <span v-if="log.problemCount" class="text-rose-500 text-[10px] font-black bg-rose-50 px-3 py-1 rounded-full uppercase">🚨 {{log.problemCount}} 问题</span>
                                 </div>
                             </div>
                         </div>
                         
                         <div class="flex items-center space-x-6">
                             <div v-if="log.is_finished" class="bg-emerald-100 text-emerald-600 px-3 py-1 rounded-full text-[10px] font-black tracking-widest">DONE</div>
-                            <button @click="deleteLog(log.id)" class="text-slate-200 hover:text-red-500 p-2 transition-colors" title="删除日志">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-4v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                </svg>
+                            <button @click="deleteLog(log.id)" class="text-slate-200 hover:text-red-500 p-2 transition-colors" title="彻底删除该日志">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-4v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                             </button>
                         </div>
                     </div>
                 </section>
 
-                <!-- 4. 汇总 (可编辑版本) -->
+                <!-- 汇总编辑 & 导出 -->
                 <section v-show="currentTab === 'summary'" class="max-w-6xl animate-in fade-in duration-500">
-                    <div class="flex justify-between items-center mb-8">
-                        <h2 class="text-2xl font-black text-slate-800">反馈汇总编辑台</h2>
-                        <span class="text-xs text-slate-400">修改后请点击右侧同步按钮保存单个日志</span>
+                    <div class="flex justify-between items-center mb-10">
+                        <div>
+                            <h2 class="text-2xl font-black text-slate-800">反馈成果汇总台</h2>
+                            <p class="text-xs text-slate-400 mt-1 uppercase tracking-widest font-bold">Feedback & Highlights Summary</p>
+                        </div>
+                        <button @click="exportHighlights" class="bg-emerald-600 text-white px-8 py-3 rounded-2xl font-bold shadow-lg shadow-emerald-100 hover:bg-emerald-700 transition-all hover:scale-105">导出精彩留言 Excel</button>
                     </div>
+
                     <div class="grid grid-cols-2 gap-12">
                         <!-- 问题汇总 -->
                         <div class="space-y-6">
                             <h3 class="font-black text-rose-500 flex items-center text-xs uppercase tracking-[0.2em] mb-4"><span class="mr-3 text-lg">🚨</span> 问题记录汇总</h3>
-                            <div v-for="log in logsWithIssues('problem')" :key="'p'+log.id" class="bg-white p-6 rounded-[32px] border border-rose-50 shadow-sm transition-all hover:shadow-md">
-                                <div class="flex justify-between mb-4 items-center">
-                                    <span class="font-bold text-slate-800 text-sm">{{log.date}}</span>
-                                    <button @click="saveLogDirect(log)" class="text-[10px] font-black text-blue-500 bg-blue-50 px-3 py-1 rounded-full uppercase hover:bg-blue-100">同步更新</button>
+                            <div v-for="log in logsWithIssues('problem')" :key="'p'+log.id" class="bg-white p-7 rounded-[32px] border border-rose-50 shadow-sm transition-all hover:shadow-md">
+                                <div class="flex justify-between mb-5 items-center">
+                                    <span class="font-bold text-slate-800 text-sm bg-slate-50 px-3 py-1 rounded-lg">{{log.date}}</span>
+                                    <button @click="saveLogDirect(log)" class="text-[10px] font-black text-blue-500 bg-blue-50 px-4 py-1.5 rounded-full uppercase hover:bg-blue-100 transition-all">同步至日志</button>
                                 </div>
-                                <div v-for="(iss, idx) in log.filteredIssues" :key="idx" class="mb-3 last:mb-0 group flex flex-col space-y-1">
-                                    <input v-model="iss.content" class="text-slate-600 text-sm bg-slate-50 p-2 rounded-lg border-none focus:ring-1 focus:ring-rose-200 outline-none w-full">
-                                    <select v-model="iss.status" class="text-[10px] font-bold self-end bg-transparent text-slate-400 outline-none cursor-pointer">
-                                        <option>未讨论</option><option>进行中</option><option>已解决</option>
-                                    </select>
+                                <div v-for="(iss, idx) in log.filteredIssues" :key="idx" class="mb-4 last:mb-0 group flex flex-col space-y-2">
+                                    <textarea v-model="iss.content" 
+                                        class="text-slate-600 text-sm bg-slate-50/50 p-4 rounded-2xl border-none focus:ring-2 focus:ring-rose-100 outline-none w-full min-h-[80px] leading-relaxed custom-scrollbar"></textarea>
+                                    <div class="flex justify-between items-center px-1">
+                                        <span class="text-[10px] text-slate-300 font-bold uppercase tracking-tighter">Status:</span>
+                                        <select v-model="iss.status" class="text-[10px] font-black bg-transparent text-slate-400 outline-none cursor-pointer">
+                                            <option>未讨论</option><option>进行中</option><option>已解决</option>
+                                        </select>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -172,24 +183,25 @@
                         <!-- 精彩留言汇总 -->
                         <div class="space-y-6">
                             <h3 class="font-black text-sky-600 flex items-center text-xs uppercase tracking-[0.2em] mb-4"><span class="mr-3 text-lg">✨</span> 精彩留言汇总</h3>
-                            <div v-for="log in logsWithIssues('good')" :key="'g'+log.id" class="bg-white p-6 rounded-[32px] border border-sky-50 shadow-sm transition-all hover:shadow-md italic">
-                                <div class="flex justify-between mb-4 items-center">
-                                    <span class="font-bold text-slate-800 text-sm italic">{{log.date}}</span>
-                                    <button @click="saveLogDirect(log)" class="text-[10px] font-black text-blue-500 bg-blue-50 px-3 py-1 rounded-full uppercase hover:bg-blue-100 not-italic">同步更新</button>
+                            <div v-for="log in logsWithIssues('good')" :key="'g'+log.id" class="bg-white p-7 rounded-[32px] border border-sky-50 shadow-sm transition-all hover:shadow-md italic">
+                                <div class="flex justify-between mb-5 items-center">
+                                    <span class="font-bold text-slate-800 text-sm not-italic bg-slate-50 px-3 py-1 rounded-lg">{{log.date}}</span>
+                                    <button @click="saveLogDirect(log)" class="text-[10px] font-black text-blue-500 bg-blue-50 px-4 py-1.5 rounded-full uppercase hover:bg-blue-100 not-italic transition-all">同步至日志</button>
                                 </div>
                                 <div v-for="(iss, idx) in log.filteredIssues" :key="idx" class="mb-2 last:mb-0">
-                                    <textarea v-model="iss.content" class="text-slate-600 text-sm bg-slate-50 p-3 rounded-xl border-none focus:ring-1 focus:ring-sky-200 outline-none w-full leading-relaxed h-20"></textarea>
+                                    <textarea v-model="iss.content" 
+                                        class="text-slate-600 text-sm bg-sky-50/30 p-5 rounded-[24px] border-none focus:ring-2 focus:ring-sky-100 outline-none w-full leading-relaxed min-h-[120px] custom-scrollbar"></textarea>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </section>
 
-                <!-- 日志编辑弹窗 -->
+                <!-- 日志编辑弹窗 (修复二次保存逻辑) -->
                 <div v-if="editLog" class="fixed inset-0 bg-slate-900/40 backdrop-blur-md flex items-center justify-center p-4 z-[100] animate-in fade-in duration-300">
-                    <div class="bg-white p-12 rounded-[56px] w-full max-w-2xl shadow-2xl overflow-y-auto max-h-[85vh]">
+                    <div class="bg-white p-12 rounded-[56px] w-full max-w-2xl shadow-2xl overflow-y-auto max-h-[85vh] custom-scrollbar">
                         <div class="flex justify-between items-center mb-10">
-                            <h3 class="text-3xl font-black text-slate-800">编辑日志详情</h3>
+                            <h3 class="text-3xl font-black text-slate-800 tracking-tight">编辑日志</h3>
                             <button @click="editLog=null" class="text-slate-300 hover:text-slate-900 transition-colors text-2xl font-light">✕</button>
                         </div>
                         
@@ -204,31 +216,30 @@
                             </div>
                         </div>
 
-                        <!-- 恢复后的审核状态勾选 -->
                         <label class="flex items-center space-x-4 mb-10 p-7 bg-emerald-50 rounded-[32px] cursor-pointer hover:bg-emerald-100 transition-all border border-emerald-100">
                             <input type="checkbox" v-model="editLog.is_finished" class="w-6 h-6 accent-emerald-600 rounded-md">
-                            <span class="font-black text-emerald-800 text-sm italic tracking-tight">确认今日任务已全部核对完毕（勾选后今日不再收到推送）</span>
+                            <span class="font-black text-emerald-800 text-sm italic tracking-tight">确认今日任务已全部核对完毕（停止催办提醒）</span>
                         </label>
                         
                         <div class="space-y-6 mb-12">
                             <div class="flex justify-between items-center px-2">
-                                <span class="font-black text-xs text-slate-800 uppercase tracking-widest">详情内容反馈列表</span>
-                                <button @click="editLog.issues.push({type:'problem', content:'', status:'未讨论'})" class="text-blue-600 text-xs font-black hover:underline">+ 增加记录项</button>
+                                <span class="font-black text-xs text-slate-800 uppercase tracking-widest">反馈详情内容清单</span>
+                                <button @click="editLog.issues.push({type:'problem', content:'', status:'未讨论'})" class="text-blue-600 text-xs font-black hover:underline">+ 增加一项</button>
                             </div>
                             <div v-for="(iss, i) in editLog.issues" :key="i" class="p-8 bg-slate-50 rounded-[40px] space-y-4 border border-transparent hover:border-slate-200 transition-all shadow-sm">
                                 <div class="flex items-center space-x-6">
-                                    <select v-model="iss.type" class="bg-white text-[10px] font-black border-none rounded-xl px-4 py-2 shadow-sm outline-none cursor-pointer">
+                                    <select v-model="iss.type" class="bg-white text-[10px] font-black border-none rounded-xl px-4 py-2 shadow-sm outline-none">
                                         <option value="problem">🚨 问题反馈</option>
                                         <option value="good">✨ 精彩留言</option>
                                     </select>
-                                    <input v-model="iss.content" placeholder="填写具体细节内容..." class="bg-transparent border-b-2 border-slate-100 flex-grow text-sm font-bold outline-none focus:border-blue-400 transition-all">
+                                    <input v-model="iss.content" placeholder="输入具体细节..." class="bg-transparent border-b-2 border-slate-100 flex-grow text-sm font-bold outline-none focus:border-blue-400 transition-all">
                                     <button @click="editLog.issues.splice(i,1)" class="text-slate-200 hover:text-rose-500 transition-colors font-bold">✕</button>
                                 </div>
                             </div>
                         </div>
 
                         <div class="flex justify-end pt-4">
-                            <button @click="saveLog" class="bg-blue-600 text-white px-14 py-6 rounded-[28px] font-black shadow-xl shadow-blue-100 hover:scale-105 transition-all uppercase tracking-widest">保存并同步</button>
+                            <button @click="saveLog" class="bg-blue-600 text-white px-14 py-6 rounded-[28px] font-black shadow-xl shadow-blue-100 hover:scale-105 transition-all uppercase tracking-widest">确认保存并同步</button>
                         </div>
                     </div>
                 </div>
@@ -254,11 +265,12 @@
                 
                 const tabs = [
                     {id:'workflow', name:'手册名单', icon:'📚'},
-                    {id:'schedule', name:'日历排班', icon:'📅'},
+                    {id:'schedule', name:'值班日历', icon:'📅'},
                     {id:'logs', name:'日志记录', icon:'🖋️'},
                     {id:'summary', name:'成果汇总', icon:'📊'}
                 ];
 
+                // --- 循环计算逻辑 ---
                 const cycleList = ['张一涵', '吴卓颖', '仇诗蕊', '马诗尧', '刘芮佳', '孙小婕', '朱思颖', '徐周雨宣', '张芷涵'];
                 const anchorDate = new Date(2026, 5, 10, 12, 0, 0);
 
@@ -288,85 +300,118 @@
                     return days;
                 });
 
-                // 为了成果汇总可编辑，提供过滤后的日志列表
+                // 成果汇总过滤
                 const logsWithIssues = (type) => {
                     return logs.value.filter(l => l.issues && l.issues.some(iss => iss.type === type))
-                        .map(l => {
-                            return {
-                                ...l,
-                                filteredIssues: l.issues.filter(iss => iss.type === type)
-                            };
-                        });
+                        .map(l => ({ ...l, filteredIssues: l.issues.filter(iss => iss.type === type) }));
                 };
 
-                const autoCreateLog = () => {
-                    const today = '2026-06-10'; // 锁定示例日期，实际可改为 new Date()...
-                    const dutyName = config.value.calendar_schedule[today] || getCycleName(today);
-                    editLog.value = { date: today, leader: myIdentity.value || dutyName, is_finished: false, issues: [] };
-                };
-
+                // --- 数据核心操作 ---
                 const fetchData = async () => {
                     loading.value = true;
-                    const { data: c } = await client.from('project_config').select('*').eq('id', 1).single();
-                    if(c) config.value = { ...config.value, ...c, calendar_schedule: c.calendar_schedule || {} };
-                    const { data: l } = await client.from('daily_logs').select('*').order('date', {ascending:false});
-                    if (l) {
-                        logs.value = l.map(item => ({
-                            ...item,
-                            goodCount: item.issues?.filter(i => i.type === 'good').length || 0,
-                            problemCount: item.issues?.filter(i => i.type === 'problem').length || 0
-                        }));
-                    }
+                    try {
+                        const { data: c } = await client.from('project_config').select('*').eq('id', 1).single();
+                        if(c) config.value = { ...config.value, ...c, calendar_schedule: c.calendar_schedule || {} };
+                        
+                        const { data: l } = await client.from('daily_logs').select('*').order('date', {ascending:false});
+                        if (l) {
+                            logs.value = l.map(item => ({
+                                ...item,
+                                goodCount: item.issues?.filter(i => i.type === 'good').length || 0,
+                                problemCount: item.issues?.filter(i => i.type === 'problem').length || 0
+                            }));
+                        }
+                    } catch(err) { console.error("数据加载失败", err); }
                     loading.value = false;
                 };
 
                 const saveConfig = async () => {
                     loading.value = true;
-                    await client.from('project_config').upsert({ id: 1, ...config.value });
-                    alert('✅ 内容已保存');
+                    const { error } = await client.from('project_config').upsert({ id: 1, ...config.value });
+                    if (!error) alert('✅ 云端配置已同步');
+                    else alert('❌ 保存失败: ' + error.message);
                     loading.value = false;
                 };
 
-                const saveIdentity = () => localStorage.setItem('my_name', myIdentity.value);
-                const openLogEdit = (l) => { editLog.value = JSON.parse(JSON.stringify(l)); };
-                
                 const saveLog = async () => {
+                    if (!editLog.value.leader) { alert("请填写负责人后再保存"); return; }
                     loading.value = true;
-                    await client.from('daily_logs').upsert(editLog.value);
-                    editLog.value = null; 
-                    await fetchData();
+                    // 精准保存逻辑：必须包含 id 字段才能执行更新
+                    const { error } = await client.from('daily_logs').upsert({
+                        id: editLog.value.id || undefined, // 如果没有 id 则 Supabase 自动生成
+                        date: editLog.value.date,
+                        leader: editLog.value.leader,
+                        is_finished: editLog.value.is_finished,
+                        issues: editLog.value.issues
+                    });
+                    if (!error) {
+                        editLog.value = null;
+                        await fetchData();
+                        alert('✅ 日志保存成功');
+                    } else { alert('❌ 保存失败: ' + error.message); }
+                    loading.value = false;
                 };
 
-                // 用于成果汇总页面的快速单行保存
+                // 汇总页快速保存
                 const saveLogDirect = async (log) => {
                     loading.value = true;
-                    // 需要把 filteredIssues 写回原 issues 数组中（保持其他类型的 issue 不变）
                     const original = logs.value.find(l => l.id === log.id);
                     if (original) {
-                        // 这是一个合并逻辑：保留非当前编辑类型的 issue，加入当前编辑好的 issue
                         const currentEditType = log.filteredIssues[0]?.type;
                         const otherTypes = original.issues.filter(iss => iss.type !== currentEditType);
                         const updatedIssues = [...otherTypes, ...log.filteredIssues];
-                        
-                        const { error } = await client.from('daily_logs').upsert({
-                            ...original,
-                            issues: updatedIssues
-                        });
-                        if (!error) alert('✅ 该日志已同步成功');
+                        const { error } = await client.from('daily_logs').upsert({ ...original, issues: updatedIssues });
+                        if (!error) alert('✅ 该日志汇总内容已同步');
                     }
                     await fetchData();
                     loading.value = false;
                 };
 
+                // --- 导出功能 ---
+                const exportSchedule = () => {
+                    const data = Object.entries(config.value.calendar_schedule).map(([date, name]) => ({ "日期": date, "负责人": name }));
+                    const ws = XLSX.utils.json_to_sheet(data);
+                    const wb = XLSX.utils.book_new();
+                    XLSX.utils.book_append_sheet(wb, ws, "值班表");
+                    XLSX.writeFile(wb, `小北项目值班表_${new Date().toLocaleDateString()}.xlsx`);
+                };
+
+                const exportHighlights = () => {
+                    const data = [];
+                    logs.value.forEach(l => {
+                        l.issues?.filter(i => i.type === 'good').forEach(i => {
+                            data.push({ "日期": l.date, "负责人": l.leader, "精彩留言内容": i.content });
+                        });
+                    });
+                    const ws = XLSX.utils.json_to_sheet(data);
+                    const wb = XLSX.utils.book_new();
+                    XLSX.utils.book_append_sheet(wb, ws, "精彩留言");
+                    XLSX.writeFile(wb, `小北项目精彩留言汇总_${new Date().toLocaleDateString()}.xlsx`);
+                };
+
+                // --- 其他辅助功能 ---
+                const autoCreateLog = () => {
+                    const today = '2026-06-10'; // 示例基准
+                    const dutyName = config.value.calendar_schedule[today] || getCycleName(today);
+                    editLog.value = { date: today, leader: myIdentity.value || dutyName, is_finished: false, issues: [] };
+                };
+                const saveIdentity = () => localStorage.setItem('my_name', myIdentity.value);
+                const openLogEdit = (l) => { editLog.value = JSON.parse(JSON.stringify(l)); };
                 const deleteLog = async (id) => {
-                    if (confirm('确定要删除这条日志吗？此操作无法撤销。')) {
+                    if (confirm('确定要彻底删除这条日志吗？')) {
                         loading.value = true;
                         await client.from('daily_logs').delete().eq('id', id);
                         await fetchData();
                         loading.value = false;
                     }
                 };
-
+                const autoFillMonth = () => {
+                    calendarDays.value.forEach(day => {
+                        if (day.currentMonth && !config.value.calendar_schedule[day.dateStr]) {
+                            config.value.calendar_schedule[day.dateStr] = getCycleName(day.dateStr);
+                        }
+                    });
+                };
                 const uploadImg = async (e) => {
                     const file = e.target.files[0]; if(!file) return;
                     loading.value = true; const name = `img_${Date.now()}`;
@@ -378,17 +423,9 @@
                     loading.value = false;
                 };
 
-                const autoFillMonth = () => {
-                    calendarDays.value.forEach(day => {
-                        if (day.currentMonth && !config.value.calendar_schedule[day.dateStr]) {
-                            config.value.calendar_schedule[day.dateStr] = getCycleName(day.dateStr);
-                        }
-                    });
-                };
-
                 onMounted(fetchData);
 
-                return { currentTab, tabs, loading, myIdentity, config, logs, editLog, calendarDays, logsWithIssues, getCycleName, autoFillMonth, autoCreateLog, saveConfig, saveIdentity, openLogEdit, saveLog, saveLogDirect, deleteLog, uploadImg };
+                return { currentTab, tabs, loading, myIdentity, config, logs, editLog, calendarDays, logsWithIssues, getCycleName, autoFillMonth, autoCreateLog, saveConfig, saveIdentity, openLogEdit, saveLog, saveLogDirect, deleteLog, uploadImg, exportSchedule, exportHighlights };
             }
         }).mount('#app');
     </script>

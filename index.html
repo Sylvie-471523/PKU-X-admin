@@ -13,7 +13,6 @@
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 1px; background: #f1f5f9; border-radius: 16px; overflow: hidden; }
         .calendar-day { background: white; min-height: 85px; padding: 8px; transition: 0.2s; }
         .today { background: #fffbeb; border: 2px solid #fbbf24 !important; }
-        .cycle-suggest { color: #94a3b8; font-style: italic; font-size: 10px; }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-900 font-sans">
@@ -36,7 +35,7 @@
                 </nav>
 
                 <div class="mt-auto pt-6 border-t border-slate-100">
-                    <label class="text-[10px] font-bold text-slate-400 uppercase">我的身份 (本地记住)</label>
+                    <label class="text-[10px] font-bold text-slate-400 uppercase">我的身份 (自动填入日志)</label>
                     <input v-model="myIdentity" @change="saveIdentity" 
                            class="w-full mt-2 bg-slate-50 border-none p-2 rounded-lg text-sm font-bold text-blue-600 focus:ring-1 focus:ring-blue-200" 
                            placeholder="输入你的名字">
@@ -46,19 +45,17 @@
             <!-- 主内容 -->
             <main class="flex-grow p-10 max-w-6xl">
                 
-                <!-- 1. 日历排班 (带自动循环功能) -->
+                <!-- 1. 日历排班 -->
                 <section v-show="currentTab === 'schedule'" class="animate-in fade-in duration-500">
                     <div class="bg-white p-8 rounded-[32px] shadow-sm border border-slate-100">
                         <div class="flex justify-between items-end mb-8">
                             <div>
                                 <h2 class="text-2xl font-black text-slate-800">值班日历</h2>
-                                <p class="text-slate-400 text-sm mt-1">
-                                    <span class="text-blue-500 font-bold">提示：</span>灰色文字为系统自动排班，点击可修改。
-                                </p>
+                                <p class="text-slate-400 text-sm mt-1">自动循环：孙小婕(6/6) → 朱思颖 → 徐周雨宣...</p>
                             </div>
                             <div class="flex space-x-3">
                                 <button @click="autoFillMonth" class="bg-slate-100 text-slate-600 px-4 py-2 rounded-xl text-xs font-bold hover:bg-slate-200">一键填充本月循环</button>
-                                <button @click="saveConfig" class="bg-blue-600 text-white px-8 py-3 rounded-2xl font-bold shadow-lg shadow-blue-100 hover:bg-blue-700">保存排班表</button>
+                                <button @click="saveConfig" class="bg-blue-600 text-white px-8 py-3 rounded-2xl font-bold shadow-lg shadow-blue-100">保存排班表</button>
                             </div>
                         </div>
 
@@ -67,7 +64,6 @@
                             <div v-for="day in calendarDays" :key="day.dateStr" 
                                  :class="['calendar-day', day.isToday ? 'today' : '', !day.currentMonth ? 'opacity-20' : '']">
                                 <div class="text-[10px] font-bold text-slate-300">{{day.dayNum}}</div>
-                                <!-- 这里的逻辑：如果有手动值则显示手动值，否则显示预测值 -->
                                 <input v-model="config.calendar_schedule[day.dateStr]" 
                                        :placeholder="getCycleName(day.dateStr)"
                                        class="w-full text-xs p-1 mt-1 bg-transparent border-none focus:ring-1 focus:ring-blue-100 rounded font-bold text-slate-700 placeholder:text-slate-300 placeholder:italic">
@@ -83,7 +79,7 @@
                             <h2 class="text-2xl font-black text-slate-800">手册名单</h2>
                             <button @click="saveConfig" class="bg-blue-600 text-white px-6 py-2 rounded-xl text-sm font-bold shadow-md">保存修改</button>
                         </div>
-                        <textarea v-model="config.workflow_text" class="w-full border-none bg-slate-50 p-6 h-32 rounded-3xl focus:ring-2 focus:ring-blue-100 mb-8" placeholder="工作流程文字说明..."></textarea>
+                        <textarea v-model="config.workflow_text" class="w-full border-none bg-slate-50 p-6 h-32 rounded-3xl focus:ring-2 focus:ring-blue-100 mb-8" placeholder="工作流程说明..."></textarea>
                         
                         <div class="grid grid-cols-2 gap-8 mb-10">
                             <div class="p-6 bg-blue-50/50 rounded-3xl border border-blue-100">
@@ -112,7 +108,7 @@
                     </div>
                 </section>
 
-                <!-- 3. 工作日志 (精彩留言版) -->
+                <!-- 3. 日志记录 -->
                 <section v-show="currentTab === 'logs'" class="max-w-4xl space-y-4 animate-in fade-in duration-500">
                     <div class="flex justify-between items-center mb-8">
                         <h2 class="text-2xl font-black text-slate-800">日志动态</h2>
@@ -122,7 +118,7 @@
                         <div class="flex items-center space-x-8">
                             <div class="text-center bg-slate-50 px-5 py-3 rounded-2xl">
                                 <div class="text-[10px] font-black text-slate-300 uppercase tracking-tighter">{{log.date.split('-')[1]}}月</div>
-                                <div class="text-2xl font-black text-slate-700 leading-none mt-1">{{log.date.split('-')[2]}}</div>
+                                <div class="text-xl font-black text-slate-700 leading-none mt-1">{{log.date.split('-')[2]}}</div>
                             </div>
                             <div>
                                 <div class="font-bold text-lg text-slate-800">{{log.leader}}</div>
@@ -150,16 +146,16 @@
                             <h3 class="font-black text-sky-600 flex items-center text-xs uppercase tracking-widest"><span class="mr-3">✨</span> 精彩留言汇总</h3>
                             <div v-for="g in allIssues.filter(i => i.type === 'good')" class="bg-white p-6 rounded-[32px] border border-sky-50 shadow-sm">
                                 <div class="flex justify-between mb-4"><span class="font-bold text-slate-800">{{g.date}}</span><span class="text-[10px] font-black text-slate-400 bg-slate-50 px-3 py-1 rounded-full">{{g.leader}}</span></div>
-                                <p class="text-slate-600 text-sm italic">“{{g.content}}”</p>
+                                <p class="text-slate-600 text-sm italic font-medium leading-relaxed">“{{g.content}}”</p>
                             </div>
                         </div>
                     </div>
                 </section>
 
-                <!-- 日志弹窗 -->
+                <!-- 日志编辑弹窗 -->
                 <div v-if="editLog" class="fixed inset-0 bg-slate-900/40 backdrop-blur-md flex items-center justify-center p-4 z-[100] animate-in fade-in duration-300">
                     <div class="bg-white p-12 rounded-[48px] w-full max-w-2xl shadow-2xl overflow-y-auto max-h-[85vh]">
-                        <h3 class="text-3xl font-black text-slate-800 mb-10 text-center">编辑工作记录</h3>
+                        <h3 class="text-3xl font-black text-slate-800 mb-10 text-center">编辑日志详情</h3>
                         <div class="grid grid-cols-2 gap-8 mb-10">
                             <div class="space-y-2">
                                 <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">负责日期</label>
@@ -172,22 +168,22 @@
                         </div>
                         <label class="flex items-center space-x-4 mb-10 p-6 bg-emerald-50 rounded-[32px] cursor-pointer">
                             <input type="checkbox" v-model="editLog.is_finished" class="w-6 h-6 accent-emerald-600">
-                            <span class="font-black text-emerald-800 text-sm italic">任务已完成（勾选后今日不再收到推送）</span>
+                            <span class="font-black text-emerald-800 text-sm italic">今日任务已全部核对（勾选后将停止微信催促）</span>
                         </label>
                         <div class="space-y-6 mb-12">
-                            <div class="flex justify-between font-black text-sm text-slate-800 uppercase tracking-widest px-2">反馈内容清单 <button @click="editLog.issues.push({type:'problem', content:'', status:'未讨论'})" class="text-blue-600 text-xs">+ 增加一项</button></div>
-                            <div v-for="(iss, i) in editLog.issues" :key="i" class="p-6 bg-slate-50 rounded-[32px] space-y-4 relative border border-transparent hover:border-slate-200 transition-all">
+                            <div class="flex justify-between font-black text-sm text-slate-800 uppercase px-2 tracking-widest">反馈详情列表 <button @click="editLog.issues.push({type:'problem', content:'', status:'未讨论'})" class="text-blue-600 text-xs">+ 增加</button></div>
+                            <div v-for="(iss, i) in editLog.issues" :key="i" class="p-6 bg-slate-50 rounded-[32px] space-y-4 border border-transparent hover:border-slate-200 transition-all">
                                 <div class="flex items-center space-x-6">
                                     <select v-model="iss.type" class="bg-white text-[10px] font-black border-none rounded-xl px-4 py-2 shadow-sm">
                                         <option value="problem">🚨 问题反馈</option>
                                         <option value="good">✨ 精彩留言</option>
                                     </select>
-                                    <input v-model="iss.content" placeholder="输入内容..." class="bg-transparent border-b-2 border-slate-100 flex-grow text-sm font-bold outline-none focus:border-blue-400">
+                                    <input v-model="iss.content" placeholder="输入具体细节内容..." class="bg-transparent border-b-2 border-slate-100 flex-grow text-sm font-bold outline-none focus:border-blue-400">
                                     <button @click="editLog.issues.splice(i,1)" class="text-slate-200 hover:text-rose-500">✕</button>
                                 </div>
                             </div>
                         </div>
-                        <button @click="saveLog" class="w-full bg-blue-600 text-white py-6 rounded-[24px] font-black shadow-xl shadow-blue-100 hover:scale-105 transition-all uppercase tracking-widest">保存并同步</button>
+                        <button @click="saveLog" class="w-full bg-blue-600 text-white py-6 rounded-[24px] font-black shadow-xl shadow-blue-100 hover:scale-105 transition-all">保存并同步</button>
                     </div>
                 </div>
 
@@ -209,31 +205,25 @@
                 const config = ref({ workflow_text:'', workflow_images:[], calendar_schedule:{}, active_users:'', problem_users:'' });
                 const logs = ref([]);
                 const editLog = ref(null);
-                const tabs = [
-                    {id:'schedule', name:'日历排班', icon:'📅'},
-                    {id:'workflow', name:'手册名单', icon:'📚'},
-                    {id:'logs', name:'日志记录', icon:'🖋️'},
-                    {id:'summary', name:'成果汇总', icon:'📊'}
-                ];
+                const tabs = [{id:'schedule', name:'日历排班', icon:'📅'}, {id:'workflow', name:'手册名单', icon:'📚'}, {id:'logs', name:'日志记录', icon:'🖋️'}, {id:'summary', name:'成果汇总', icon:'📊'}];
 
-                // 循环名单
+                // 修正后的名单和循环逻辑
                 const cycleList = ['孙小婕', '朱思颖', '徐周雨宣', '张芷涵', '张一涵', '吴卓颖', '仇诗蕊', '马诗尧', '刘芮佳'];
-                // 基准日期：6月6日 (我们统一用 2024-06-06 作为计算起点)
-                const anchorDate = new Date('2024-06-06');
-
-                // 计算某天的循环姓名
-                const getCycleName = (targetDateStr) => {
-                    const target = new Date(targetDateStr);
-                    const diffTime = target - anchorDate;
-                    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-                    if (diffDays < 0) return "..."; 
-                    const index = diffDays % cycleList.length;
+                
+                const getCycleName = (dateStr) => {
+                    // 使用 Date.UTC 确保时区一致性，基准设定为 2024-06-06
+                    const anchor = Date.UTC(2024, 5, 6); // 5 代表 6月
+                    const targetParts = dateStr.split('-');
+                    const target = Date.UTC(targetParts[0], targetParts[1]-1, targetParts[2]);
+                    
+                    const diffDays = Math.floor((target - anchor) / (24 * 60 * 60 * 1000));
+                    // 修正负数余数问题，确保向前推也准确
+                    const index = ((diffDays % 9) + 9) % 9;
                     return cycleList[index];
                 };
 
-                // 一键填充本月 (将建议姓名正式写入数据库)
                 const autoFillMonth = () => {
-                    if(!confirm('这将根据循环名单自动填充本月空白格子，确定吗？')) return;
+                    if(!confirm('确定要自动填充本月空白排班吗？')) return;
                     calendarDays.value.forEach(day => {
                         if (day.currentMonth && !config.value.calendar_schedule[day.dateStr]) {
                             config.value.calendar_schedule[day.dateStr] = getCycleName(day.dateStr);
@@ -245,8 +235,14 @@
                     const now = new Date(); const year = now.getFullYear(); const month = now.getMonth();
                     const firstDay = new Date(year, month, 1); const lastDay = new Date(year, month + 1, 0);
                     let startDay = (firstDay.getDay() || 7); const days = [];
-                    for(let i=startDay-1; i>0; i--) { const d=new Date(year, month, 1-i); days.push({ dayNum: d.getDate(), dateStr: d.toISOString().split('T')[0], currentMonth: false }); }
-                    for(let i=1; i<=lastDay.getDate(); i++) { const dStr=`${year}-${String(month+1).padStart(2,'0')}-${String(i).padStart(2,'0')}`; days.push({ dayNum: i, dateStr: dStr, currentMonth: true, isToday: dStr === new Date().toISOString().split('T')[0] }); }
+                    for(let i=startDay-1; i>0; i--) { 
+                        const d = new Date(year, month, 1 - i); 
+                        days.push({ dayNum: d.getDate(), dateStr: d.toISOString().split('T')[0], currentMonth: false }); 
+                    }
+                    for(let i=1; i<=lastDay.getDate(); i++) { 
+                        const dStr = `${year}-${String(month+1).padStart(2,'0')}-${String(i).padStart(2,'0')}`;
+                        days.push({ dayNum: i, dateStr: dStr, currentMonth: true, isToday: dStr === new Date().toISOString().split('T')[0] }); 
+                    }
                     return days;
                 });
 
@@ -258,7 +254,6 @@
 
                 const autoCreateLog = () => {
                     const today = new Date().toISOString().split('T')[0];
-                    // 逻辑：手动填写的值 > 循环建议值 > 身份名
                     const dutyName = config.value.calendar_schedule[today] || getCycleName(today);
                     editLog.value = { date: today, leader: myIdentity.value || dutyName, is_finished: false, issues: [] };
                 };
@@ -275,17 +270,17 @@
                 const saveConfig = async () => {
                     loading.value = true;
                     await client.from('project_config').upsert({ id: 1, ...config.value });
-                    alert('✅ 云端同步成功');
+                    alert('✅ 同步成功');
                     loading.value = false;
                 };
 
+                const saveIdentity = () => localStorage.setItem('my_name', myIdentity.value);
                 const openLogEdit = (l) => { editLog.value = JSON.parse(JSON.stringify(l)); };
                 const saveLog = async () => {
                     loading.value = true;
                     await client.from('daily_logs').upsert(editLog.value);
                     editLog.value = null; fetchData();
                 };
-
                 const uploadImg = async (e) => {
                     const file = e.target.files[0]; if(!file) return;
                     loading.value = true; const name = `img_${Date.now()}`;
@@ -298,7 +293,7 @@
                 };
 
                 onMounted(fetchData);
-                return { currentTab, tabs, loading, myIdentity, config, logs, editLog, calendarDays, allIssues, getCycleName, autoFillMonth, autoCreateLog, saveConfig, openLogEdit, saveLog, uploadImg };
+                return { currentTab, tabs, loading, myIdentity, config, logs, editLog, calendarDays, allIssues, getCycleName, autoFillMonth, autoCreateLog, saveConfig, saveIdentity, openLogEdit, saveLog, uploadImg };
             }
         }).mount('#app');
     </script>

@@ -1,0 +1,23 @@
+name: 智能提醒机器人
+on:
+  schedule:
+    - cron: '0 9 * * *'  # 北京时间 17:00
+    - cron: '0 11 * * *' # 北京时间 19:00
+  workflow_dispatch:
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 检查并提醒
+        run: |
+          DATE=$(date -d "+8 hours" +%Y-%m-%d)
+          # 获取值班人
+          CONF=$(curl -s -X GET "${{ secrets.SUPABASE_URL }}/rest/v1/project_config?id=eq.1&select=calendar_schedule" -H "apikey: ${{ secrets.SUPABASE_KEY }}")
+          DUTY_USER=$(echo $CONF | grep -oP "(?<=\"$DATE\":\")[^\"]*")
+          # 检查日志是否完成
+          LOG=$(curl -s -X GET "${{ secrets.SUPABASE_URL }}/rest/v1/daily_logs?date=eq.$DATE&select=is_finished" -H "apikey: ${{ secrets.SUPABASE_KEY }}")
+          IS_FINISHED=$(echo $LOG | grep -oP "(?<=\"is_finished\":)true")
+          
+          if [ "$IS_FINISHED" != "true" ]; then
+            curl -H "Content-Type: application/json" -X POST -d "{\"appToken\":\"${{ secrets.WXPUSHER_APP_TOKEN }}\",\"content\":\"⚠️【小北催办】\n今日负责人：@${DUTY_USER:-未排班}\n状态：尚未点击‘任务完成’！\n请及时处理。\",\"summary\":\"值班未完成提醒\",\"contentType\":1,\"uids\":[]}" "https://wxpusher.zjiecode.com/api/send/message"
+          fi

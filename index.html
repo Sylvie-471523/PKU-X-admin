@@ -53,7 +53,7 @@
                                 <h2 class="text-2xl font-black text-slate-800">值班日历排班</h2>
                                 <p class="text-slate-400 text-sm mt-1 flex items-center">
                                     <span class="w-2 h-2 bg-blue-500 rounded-full mr-2"></span>
-                                    起点确认：6月10日为 张一涵
+                                    起点确认：2025年3月5日为 张一涵
                                 </p>
                             </div>
                             <div class="flex space-x-3">
@@ -75,6 +75,7 @@
                     </div>
                 </section>
 
+                <!-- 其他 Section 保持不变 (workflow, logs, summary, editLog modal...) -->
                 <!-- 2. 手册名单 -->
                 <section v-show="currentTab === 'workflow'" class="space-y-6">
                     <div class="bg-white p-8 rounded-[40px] shadow-sm border border-slate-100">
@@ -172,11 +173,6 @@
                             </div>
                         </div>
                         
-                        <label class="flex items-center space-x-4 mb-10 p-7 bg-emerald-50 rounded-[32px] cursor-pointer hover:bg-emerald-100 transition-all border border-emerald-50">
-                            <input type="checkbox" v-model="editLog.is_finished" class="w-6 h-6 accent-emerald-600">
-                            <span class="font-black text-emerald-800 text-sm italic tracking-tight">今日任务已全部核对完毕（勾选后将停止微信推送提醒）</span>
-                        </label>
-                        
                         <div class="space-y-6 mb-12">
                             <div class="flex justify-between items-center px-2">
                                 <span class="font-black text-xs text-slate-800 uppercase tracking-[0.2em]">反馈详情内容清单</span>
@@ -206,6 +202,7 @@
 
     <script>
         const { createApp, ref, computed, onMounted } = Vue;
+        // 配置信息 (保持原样)
         const S_URL = 'https://zapiekidlfpyjvlvnrhc.supabase.co';
         const S_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InphcGlla2lkbGZweWp2bHZucmhjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA0OTE3NTMsImV4cCI6MjA5NjA2Nzc1M30.1QGzAJQMj45KSyiFfuP_EPNqcKgoPMQO3aplqvn1iOc';
         const client = supabase.createClient(S_URL, S_KEY);
@@ -225,18 +222,31 @@
                     {id:'summary', name:'成果汇总', icon:'📊'}
                 ];
 
-                // --- 最新名单 (以6月10日为准) ---
-                const cycleList = ['张一涵', '吴卓颖', '仇诗蕊', '马诗尧', '刘芮佳', '孙小婕', '朱思颖', '徐周雨宣', '张芷涵'];
+                // --- 修改后的名单 (顺序已定) ---
+                const cycleList = [
+                    '张一涵', 
+                    '吴卓颖', 
+                    '仇诗蕊', 
+                    '马诗尧', 
+                    '刘芮佳', 
+                    '孙小婕', 
+                    '朱思颖', 
+                    '徐周雨宣', 
+                    '张芷涵'
+                ];
                 
+                // --- 获取排班名字逻辑 ---
                 const getCycleName = (dateStr) => {
                     const [y, m, d] = dateStr.split('-').map(Number);
-                    // 核心：强制锚定 6月10日 中午 12点，防止时区波动
-                    const anchor = new Date(2024, 5, 10, 12, 0, 0); 
+                    // 设定起始点为 2025年3月5日 (张一涵开始)
+                    // 注意：月份参数 0代表1月, 2代表3月
+                    const anchor = new Date(2025, 2, 5, 12, 0, 0); 
                     const target = new Date(y, m - 1, d, 12, 0, 0);
                     
                     const diffMs = target.getTime() - anchor.getTime();
                     const diffDays = Math.round(diffMs / (1000 * 60 * 60 * 24));
                     
+                    // 9人循环计算
                     const index = ((diffDays % 9) + 9) % 9;
                     return cycleList[index];
                 };
@@ -250,6 +260,7 @@
                     });
                 };
 
+                // 日历生成逻辑
                 const calendarDays = computed(() => {
                     const now = new Date(); const year = now.getFullYear(); const month = now.getMonth();
                     const firstDay = new Date(year, month, 1); const lastDay = new Date(year, month + 1, 0);
@@ -280,10 +291,12 @@
 
                 const fetchData = async () => {
                     loading.value = true;
-                    const { data: c } = await client.from('project_config').select('*').eq('id', 1).single();
-                    if(c) config.value = { ...config.value, ...c, calendar_schedule: c.calendar_schedule || {} };
-                    const { data: l } = await client.from('daily_logs').select('*').order('date', {ascending:false});
-                    logs.value = (l || []).map(item => ({ ...item, goodCount: item.issues?.filter(i => i.type === 'good').length || 0, problemCount: item.issues?.filter(i => i.type === 'problem').length || 0 }));
+                    try {
+                        const { data: c } = await client.from('project_config').select('*').eq('id', 1).single();
+                        if(c) config.value = { ...config.value, ...c, calendar_schedule: c.calendar_schedule || {} };
+                        const { data: l } = await client.from('daily_logs').select('*').order('date', {ascending:false});
+                        logs.value = (l || []).map(item => ({ ...item, goodCount: item.issues?.filter(i => i.type === 'good').length || 0, problemCount: item.issues?.filter(i => i.type === 'problem').length || 0 }));
+                    } catch (e) { console.error(e); }
                     loading.value = false;
                 };
 

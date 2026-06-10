@@ -2,10 +2,9 @@ name: 智能提醒机器人
 
 on:
   schedule:
-    # 北京时间 17:00 和 19:00
     - cron: '0 9 * * *'
     - cron: '0 11 * * *'
-  workflow_dispatch: # 允许手动点击
+  workflow_dispatch:
 
 jobs:
   check_and_notify:
@@ -13,31 +12,29 @@ jobs:
     steps:
       - name: 执行检查逻辑
         run: |
-          # 1. 获取北京时间日期
           DATE=$(TZ='Asia/Shanghai' date +'%Y-%m-%d')
           echo "今日日期: $DATE"
 
-          # 2. 获取排班表
+          # 1. 获取排班表
           CONF=$(curl -s -f -X GET "${{ secrets.SUPABASE_URL }}/rest/v1/project_config?id=eq.1&select=calendar_schedule" \
             -H "apikey: ${{ secrets.SUPABASE_KEY }}" \
             -H "Authorization: Bearer ${{ secrets.SUPABASE_KEY }}")
           
-          # 3. 提取今日值班人
+          # 2. 提取今日值班人
           DUTY_USER=$(echo $CONF | grep -oP "(?<=\"$DATE\":\")[^\"]*" || echo "")
           echo "今日值班人: ${DUTY_USER:-未排班}"
 
-          # 4. 检查今日日志是否已完成
+          # 3. 检查今日日志是否已完成
           LOG=$(curl -s -X GET "${{ secrets.SUPABASE_URL }}/rest/v1/daily_logs?date=eq.$DATE&select=is_finished" \
             -H "apikey: ${{ secrets.SUPABASE_KEY }}" \
             -H "Authorization: Bearer ${{ secrets.SUPABASE_KEY }}")
           
-          # 判断是否包含 is_finished: true
           if echo "$LOG" | grep -q '"is_finished":true'; then
             echo "✅ 任务已完成，无需提醒。"
           else
-            echo "⚠️ 任务未完成，准备发送微信..."
+            echo "⚠️ 任务未完成，发送栏目微信..."
             
-            # 发送提醒并打印结果 (请确保下面填入了正确的 UID)
+            # 发送提醒到栏目 (请修改下面的 topicIds)
             RESPONSE=$(curl -s -X POST "https://wxpusher.zjiecode.com/api/send/message" \
               -H "Content-Type: application/json" \
               -d "{
@@ -45,7 +42,8 @@ jobs:
                 \"content\":\"⚠️【小北催办】\n\n今日负责人：@${DUTY_USER:-未排班}\n状态：尚未点击‘审核完成’状态！\n\n请及时登录后台完善记录。\n🔗 https://vivian16876-cyber.github.io/PKU-X-admin/\",
                 \"summary\":\"值班提醒：${DUTY_USER:-未排班}\",
                 \"contentType\":1,
-                \"uids\":[\"UID_TFWRhBXNSGNfZVm1z5PFaRZb2ls8\"]
+                \"topicIds\":[44886],
+                \"uids\":[]
               }")
             
             echo "微信推送结果: $RESPONSE"
